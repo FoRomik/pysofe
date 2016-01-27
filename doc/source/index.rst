@@ -6,12 +6,17 @@
 Welcome to pysofe_light's documentation!
 ========================================
 
+.. warning::
+   This documentation is under construction and does not cover every
+   functionality and theoretical background information at all!
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-
+   guide/index
+   modules/index
 
 Indices and tables
 ==================
