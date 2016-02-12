@@ -10,6 +10,10 @@ class Mesh(object):
     """
     Provides a class for general meshes.
 
+    Basically clues together the MeshGeometry and MeshTopology
+    classes and provides interfaces for mesh refinement and
+    global point search.
+
     Parameters
     ----------
 
@@ -83,20 +87,6 @@ class Mesh(object):
         """
         # edges are mesh entities of topological dimension 1
         return self.Topology.get_entities(d=1)
-
-    def get_orientation(self, d=1):
-        """
-        Returns an array indicating if the vertices of the
-        mesh entities with the given topological dimension
-        are ordered correctly.
-
-        Parameters
-        ----------
-
-        d : int
-            The topological dimension of the entities to check
-        """
-        return self.Topology._get_orientation(d)
 
     def refine(self, method='uniform', **kwargs):
         """
