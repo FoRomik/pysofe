@@ -6,6 +6,10 @@ of the partial differential equation.
 # IMPORTS
 import numpy as np
 
+from .geometry import MeshGeometry
+from .topology import MeshTopology
+from .reference_map import ReferenceMap
+
 class Mesh(object):
     """
     Provides a class for general meshes.
@@ -30,17 +34,17 @@ class Mesh(object):
         connectivity = np.asarray(connectivity, dtype=int)
 
         # check input arguments
-        assert 1 <= nodes.shape[0] <= 3
+        assert 1 <= nodes.shape[1] <= 3
         
         # get mesh dimension from nodes
-        self._dimension = nodes.shape[0]
+        self._dimension = nodes.shape[1]
 
         # init mesh geometry and topology
         self.Geometry = MeshGeometry(nodes)
-        self.Topology = MeshTopology(connectivity)
+        self.Topology = MeshTopology(cells=connectivity, dimension=self._dimension)
 
         # init reference maps class
-        self.RefMap = ReferenceMap(self)
+        self.ReferenceMap = ReferenceMap(self)
 
     @property
     def dimension(self):
@@ -115,7 +119,7 @@ class Mesh(object):
         containing_cells = self.Geometry._find_cells(points=points,
                                                      cells=self.cells,
                                                      return_cells=True)
-        local_points = self.RefMap.eval_inverse(points=points, cells=containing_cells)
+        local_points = self.ReferenceMap.eval_inverse(points=points, cells=containing_cells)
 
         # test if computed local points really are inside reference domain
         eps = 1e-14

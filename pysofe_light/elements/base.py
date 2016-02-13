@@ -93,8 +93,7 @@ class Element(object):
         """
 
         # transfer points to numpy array if necessary
-        if not isinstance(points, np.ndarray):
-            points = np.atleast_2d(points)
+        points = np.atleast_2d(points)
 
         # check the points' dimensions
         if not points.ndim == 2:

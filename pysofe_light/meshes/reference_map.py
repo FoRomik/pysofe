@@ -5,6 +5,7 @@ Provides the data structure for the family of reference maps.
 # IMPORTS
 import numpy as np
 
+from pysofe_light.elements.simple.lagrange import P1
 
 class ReferenceMap(object):
     """
@@ -23,7 +24,11 @@ class ReferenceMap(object):
 
     def __init__(self, mesh, shape_elem=None):
         self._mesh = mesh
-        self._shape_elem = shape_elem
+
+        if shape_elem is not None:
+            self._shape_elem = shape_elem
+        else:
+            self._shape_elem = P1(dimension=mesh.dimension)
 
     def eval(self, points, d=0, dim=None):
         """
@@ -52,10 +57,12 @@ class ReferenceMap(object):
             for which to evaluate the reference maps
         """
 
+        points = np.atleast_2d(points)
+        
         if dim is not None:
             assert dim == np.size(points, axis=0)
         else:
-            dim = self._shape_elem.dimension
+            dim = np.size(points, axis=0)
 
         # evaluate each basis function of the shape element or
         # their derivatives (according to the order `d`) in every point
@@ -63,10 +70,10 @@ class ReferenceMap(object):
 
         # get the vertex indices of the mesh entities onto which
         # the reference maps should be evaluated
-        vertices = self.mesh.Topology.get_entities(d=dim)
+        vertices = self._mesh.Topology.get_entities(d=dim)
 
         # get the coordinates of all the entities' vertices
-        coords = self.mesh.nodes.take(vertices - 1, axis=0)    # nE x nB x nD
+        coords = self._mesh.nodes.take(vertices - 1, axis=0)    # nE x nB x nD
 
         if d == 0:
             # basis: nB x nP
@@ -119,7 +126,7 @@ class ReferenceMap(object):
 
         return jacs_inv
 
-    def jacobian_determinant(self, points)
+    def jacobian_determinant(self, points):
         """
         Returns the determinants of the reference maps' jacobians evaluated at given points.
 

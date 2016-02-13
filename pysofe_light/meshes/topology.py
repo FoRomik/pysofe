@@ -7,6 +7,8 @@ import numpy as np
 from scipy import sparse
 import itertools
 
+from pysofe_light.utils import unique_rows
+
 # DEBUGGING
 from IPython import embed as IPS
 
@@ -25,7 +27,7 @@ class MeshTopology(object):
         The spatial dimension of the mesh cells
     """
 
-    def __init__(self, cells, dim):
+    def __init__(self, cells, dimension):
         # make sure cells array has correct type
         cells = np.asarray(cells, dtype='int')
 
@@ -35,17 +37,17 @@ class MeshTopology(object):
             raise ValueError(msg)
 
         # by now, mesh topology can only handle simplicial elements
-        if not np.size(cells, axis=1) == dim + 1:
+        if not np.size(cells, axis=1) == dimension + 1:
             raise NotImplementedError('Currently only supports simplicial meshes!')
         else:
-            self._dimension = dim
+            self._dimension = dimension
             self._n_vertices = np.arange(self._dimension+1) + 1
 
         # the following dictionary is used to store every incidence relation
         # of the mesh entities once they have been computed to avoid recomputation
-        self._incidence = dict.fromkeys(range(dim + 1))
-        for i in xrange(dim + 1):
-            self._incidence[i] = dict.fromkeys(range(dim + 1))
+        self._incidence = dict.fromkeys(range(dimension + 1))
+        for i in xrange(dimension + 1):
+            self._incidence[i] = dict.fromkeys(range(dimension + 1))
 
         # initialize incidence relations
         self._init_incidence(cells)
@@ -321,7 +323,7 @@ class MeshTopology(object):
 
         if self._incidence[dd][d] is not None:
             if self._incidence[d][dd] is None:
-                incidence_dd_d = self.get_connectivity(of=dd, to=d)
+                incidence_dd_d = self.get_connectivity(dd, d)
                 self._incidence[d][dd] = incidence_dd_d.T
             else:
                 # incidence relation already exists
@@ -348,8 +350,8 @@ class MeshTopology(object):
         # incidence matrices for the relations `d -> ddd` and `ddd -> dd`
         # so we transfer them into a format more suitable for this
         # (and we need them as integer matrices)
-        incidence_d_ddd = self.get_connectivity(of=d, to=ddd).tocsr().astype('int')
-        incidence_ddd_dd = self.get_connectivity(of=ddd, to=dd).tocsr().astype('int')
+        incidence_d_ddd = self.get_connectivity(d, ddd).tocsr().astype('int')
+        incidence_ddd_dd = self.get_connectivity(ddd, dd).tocsr().astype('int')
 
         intersection = incidence_d_ddd.dot(incidence_ddd_dd)
 
@@ -390,11 +392,11 @@ class MeshTopology(object):
         """
 
         # first we need for each cell its defining vertex indices
-        cell_vertices = self._get_indices(d=self._dimension)
+        cell_vertices = self._get_indices(d=self._dimension, dd=0)
 
         # then we need to know the possible local index combinations
         # that would define the `d`-dimensional mesh entities of each cell
-        combs = itertools.combinations(range(self._dimension+1), self._n_vertices[-1])
+        combs = itertools.combinations(range(self._dimension+1), self._n_vertices[d])
         # e.g. for a triangle and edges (`d=1`) this would be `[(0,1), (0,2), (1,2)]`
         # because the three edges of a triangle are defined by the
         # first-second (0,1), first-third (0,2) and second-third (1,2)  

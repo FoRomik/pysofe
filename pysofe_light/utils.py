@@ -2,7 +2,7 @@
 Provides some helper functions.
 """
 
-import numpy
+import numpy as np
 
 def unique_rows(A, return_index=False, return_inverse=False):
     """

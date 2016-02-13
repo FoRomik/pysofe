@@ -22,10 +22,10 @@ class P1(Element):
 
     def __init__(self, dimension):
         order = 1
-        n_basis = [2, 3, 4][:dimenson]
-        n_verts = [2, 3, 4][:dimenson]
+        n_basis = (2, 3, 4)[:dimension]
+        n_verts = (2, 3, 4)[:dimension]
         
-        Element.__init__(self, dimenson, order, n_basis, n_verts)
+        Element.__init__(self, dimension, order, n_basis, n_verts)
 
         self._dof_tuple = (1, 0, 0)
 
