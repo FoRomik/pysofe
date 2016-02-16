@@ -40,11 +40,11 @@ class Mesh(object):
         self._dimension = nodes.shape[1]
 
         # init mesh geometry and topology
-        self.Geometry = MeshGeometry(nodes)
-        self.Topology = MeshTopology(cells=connectivity, dimension=self._dimension)
+        self.geometry = MeshGeometry(nodes)
+        self.topology = MeshTopology(cells=connectivity, dimension=self._dimension)
 
         # init reference maps class
-        self.ReferenceMap = ReferenceMap(self)
+        self.ref_map = ReferenceMap(self)
 
     @property
     def dimension(self):
@@ -58,7 +58,7 @@ class Mesh(object):
         """
         The coordinates of the mesh nodes.
         """
-        return self.Geometry.nodes
+        return self.geometry.nodes
 
     @property
     def cells(self):
@@ -66,7 +66,7 @@ class Mesh(object):
         The incident vertex indices of the mesh cells.
         """
         # the mesh cells have the same topological dimension as the mesh dimension
-        return self.Topology.get_entities(d=self.dimension)
+        return self.topology.get_entities(d=self.dimension)
 
     @property
     def facets(self):
@@ -74,7 +74,7 @@ class Mesh(object):
         The incident vertex indices of the mesh facets.
         """
         # the mesh facets have topological codimension 1
-        return elf.Topology.get_entities(d=self.dimension - 1)
+        return elf.topology.get_entities(d=self.dimension - 1)
 
     @property
     def faces(self):
@@ -82,7 +82,7 @@ class Mesh(object):
         The incident vertex indices of the mesh faces.
         """
         # faces are mesh entities of topological dimension 2
-        return self.Topology.get_entities(d=2)
+        return self.topology.get_entities(d=2)
 
     @property
     def edges(self):
@@ -90,7 +90,7 @@ class Mesh(object):
         The incident vertex indices of the mesh edges.
         """
         # edges are mesh entities of topological dimension 1
-        return self.Topology.get_entities(d=1)
+        return self.topology.get_entities(d=1)
 
     def refine(self, method='uniform', **kwargs):
         """
@@ -103,32 +103,3 @@ class Mesh(object):
             A string specifying the refinement method to use
         """
         refine(mesh=self, method=method, inplace=True, **kwargs)
-
-    def search(self, points):
-        """
-        Determines the containing cell for every given global point
-        as well as the corresponding local point on the reference domain.
-
-        Parameters
-        ----------
-
-        points : array_like
-            The global query points
-        """
-
-        containing_cells = self.Geometry._find_cells(points=points,
-                                                     cells=self.cells,
-                                                     return_cells=True)
-        local_points = self.ReferenceMap.eval_inverse(points=points, cells=containing_cells)
-
-        # test if computed local points really are inside reference domain
-        eps = 1e-14
-        m0 = np.logical_and(local_points[0] > -eps, local_points[1] > -eps)
-        m1 = preimages.sum(axis=0) <= 1. + eps
-        
-        inside = np.logical_and(m0, m1)
-
-        if not inside.all():
-            raise RuntimeError('GPS could not find all containing cells and preimages!')
-
-        return containing_cells, local_points
