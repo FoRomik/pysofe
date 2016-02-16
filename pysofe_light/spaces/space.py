@@ -8,6 +8,7 @@ import numpy as np
 from scipy import sparse
 
 from .. import quadrature
+from .manager import DOFManager
 
 class FESpace(object):
     """
@@ -31,7 +32,7 @@ class FESpace(object):
         if not mesh.dimension == element.dimension:
             msg = "Dimension mismatch between mesh and reference element! ({}/{})"
             raise ValueError(msg.format(mesh.dimension, element.dimension))
-        elif not mesh.ReferenceMap.shape_elem.n_verts == element.n_verts:
+        elif not mesh.ref_map.shape_elem.n_verts == element.n_verts:
             raise ValueError("Incompatible shapes between mesh and reference element!")
 
         self.mesh = mesh
@@ -92,12 +93,12 @@ class FESpace(object):
         dim = self.element.dimension
         
         qr = [None] * (dim + 1)
-        qr[dim] = quadrature.GaussPoint()
-        qr[dim-1] = quadrature.GaussInterval(order)
+        qr[0] = quadrature.GaussPoint()
+        qr[1] = quadrature.GaussInterval(order)
         if dim > 1:
-            qr[dim-2] = quadrature.GaussTriangle(order)
+            qr[2] = quadrature.GaussTriangle(order)
             if dim > 2:
-                qr[dim-3] = quadrature.GaussTetrahedron(order)
+                qr[3] = quadrature.GaussTetrahedron(order)
 
         return qr
 

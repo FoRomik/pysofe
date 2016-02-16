@@ -30,6 +30,10 @@ class ReferenceMap(object):
         else:
             self._shape_elem = P1(dimension=mesh.dimension)
 
+    @property
+    def shape_elem(self):
+        return self._shape_elem
+            
     def eval(self, points, d=0, dim=None):
         """
         Evaluates each member of the family of reference maps

@@ -6,6 +6,7 @@ of the partial differential equation.
 # IMPORTS
 import numpy as np
 
+import refinements
 from .geometry import MeshGeometry
 from .topology import MeshTopology
 from .reference_map import ReferenceMap
@@ -102,4 +103,4 @@ class Mesh(object):
         method : str
             A string specifying the refinement method to use
         """
-        refine(mesh=self, method=method, inplace=True, **kwargs)
+        refinements.refine(mesh=self, method=method, inplace=True, **kwargs)

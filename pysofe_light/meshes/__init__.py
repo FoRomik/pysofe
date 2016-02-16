@@ -6,5 +6,6 @@ import mesh
 import geometry
 import topology
 import reference_map
+import refinements
 
 from mesh import Mesh
