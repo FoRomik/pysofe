@@ -11,4 +11,5 @@ __version__ = '0.1'
 
 import elements
 import meshes
+import quadrature
 import utils
