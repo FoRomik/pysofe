@@ -194,3 +194,168 @@ class FESpace(object):
             derivatives = (derivatives[:,:,:,:,:,None] * inv_jac[:,None,:,None,:,:]).sum(axis=-2)
 
         return derivatives
+
+    def _assemble_operator(self, entries, d, mask):
+        """
+        Assembles the discrete weak form of the operator.
+
+        Parameters
+        ----------
+
+        codim : int
+            The codimension of the mesh entities for which to
+            assemble the operator
+
+        entity_mask : array_like
+            Boolean array that specifies for which entities to 
+            assemble the operator
+
+        Returns
+        -------
+
+        scipy.sparse.lil_matrix
+        """
+
+        # compute indices of the entries w.r.t. the dof map
+        dof_map = self.fe_space._get_dof_map(d)
+        n_dof = self.fe_space.n_dof
+
+        if mask is not None:
+            assert mask.ndim == 1
+            assert mask.dtype == bool
+
+            entries = entries.compress(condition=mask, axis=0)
+            dof_map = dof_map.compress(condition=mask, axis=1)
+
+        if np.size(entries, axis=2) == 1:
+            row_ind = dof_map.ravel(order='F')
+            col_ind = np.ones(np.size(dof_map))
+            shape = (n_dof, 1)
+        else:
+            nB = np.size(entries, axis=1)
+            row_ind = np.tile(dof_map, reps=(nB,1)).ravel(order='F')
+            col_ind = np.repeat(dof_map, repeats=nB, axis=0).ravel(order='F')
+            shape = (n_dof, n_dof)
+
+        # make entries one dimensional
+        entries = entries.ravel(order='C') # !!! 
+            
+        # assemble
+        M = sparse.coo_matrix((entries, (np.abs(row_ind)-1, np.abs(col_ind)-1)), shape=shape)
+        
+        return M.tolil()
+    
+    def assemble_mass_matrix(self, c, d, mask):
+        # get quadrature points and weights for the integration
+        qpoints, qweights = self._get_quadrature_data(d)    # nD x nP, nP
+        
+        # get jacobian determinant for the integral transformation
+        jac_det = self.mesh.ref_map.jacobian_determinant(points=qpoints)    # nE x nP
+
+        # evaluate factor
+        if callable(c):
+            C = self.mesh.eval_function(fnc=c, points=qpoints)              # nE x nP
+            C = C[:,new,new,:]                                              # nE x  1 x  1 x nP
+        else:
+            assert isinstance(c, (int, float))
+            C = c
+        
+        # compute entries of the operator matrix
+        basis = self.element.eval_basis(points=qpoints, d=0)
+        values = basis[new,new,:,:] * basis[new,:,new,:]                    # nE x nB x nB x nP
+        
+        jac_det = jac_det[:,new,new,:]                                      # nE x  1 x  1 x nP
+        qweights = qweights[new,new,new,:]                                  #  1 x  1 x  1 x nP
+
+        try:
+            entries = (C * values * jac_det * qweights).sum(axis=-1)            # nE x nB x nB
+        except MemoryError as err:
+            if isinstance(c, (int, float)) and self.mesh.shape_elem.order == 1:
+                # if mesh facets are straight sided the jacobian determinant
+                # is constant for all elements/points
+                # if the function is constant too we hopefully can avoid the memory error
+                entries = (C * values * jac_det[0,0,0,0] * qweights).sum(axis=-1)
+                entries = np.tile(entries, reps=(jac_det.shape[0],1,1))
+            else:
+                raise err
+
+        return self._assemble_operator(entries, d, mask)
+
+    def assemble_l2_product(self, f, d, mask):
+        # get quadrature points and weights for the integration
+        qpoints, qweights = self._get_quadrature_data(d)    # nD x nP, nP
+        
+        # get jacobian determinant for the integral transformation
+        jac_det = self.mesh.ref_map.jacobian_determinant(points=qpoints)    # nE x nP
+
+        # evaluate factor
+        if callable(f):
+            F = self.mesh.eval_function(fnc=f, points=qpoints)              # nE x nP
+            F = F[:,new,new,:]                                              # nE x  1 x  1 x nP
+        else:
+            assert isinstance(f, (int, float))
+            F = f
+        
+        # compute entries of the operator matrix
+        basis = self.element.eval_basis(points=qpoints, d=0)                # nB x nP
+        values = basis[new,:,new,:]                                         #  1 x nB x  1 x nP
+        
+        jac_det = jac_det[:,new,new,:]                                      # nE x  1 x  1 x nP
+        qweights = qweights[new,new,new,:]                                  #  1 x  1 x  1 x nP
+
+        entries = (F * values * jac_det * qweights).sum(axis=-1)            # nE x nB x  1
+
+        return self._assemble_operator(entries, d, mask)
+
+    def assemble_laplace(self, a, d, mask):
+        # get quadrature points and weights for the integration
+        qpoints, qweights = self._get_quadrature_data(d)    # nD x nP, nP
+        
+        # get jacobian determinant for the integral transformation
+        jac_det = self.mesh.ref_map.jacobian_determinant(points=qpoints)    # nE x nP
+
+        # evaluate factor
+        A = self.mesh.eval_function(fnc=a, points=qpoints)       # nE x nP[x nD[x nD]]
+                
+        # compute entries of the operator matrix
+        dbasis_global = self.eval_global_derivatives(points=qpoints) # nE x nB x nP x nD
+        nE, nB, nP, nD = dbasis_global.shape
+
+        db_g = dbasis_global                                                  # nE x nB x nP x nD
+        
+        if (A.ndim - 2) == 0:
+            # assuming A is scalar
+            A = A[:,new,new,:]                                                # nE x  1 x  1 x nP
+            values = A * (db_g[:,new,:,:,:] * db_g[:,:,new,:,:]).sum(axis=-1) # nE x nB x nB x nP
+        elif (A.ndim - 2) == 2:
+            # assuming A is a matrix
+            A = A[:,None,:,:,:]                                               # nE x  1 x nP x nD x nD
+            Adb_g = (A * db_g[:,:,:,None,:]).sum(axis=-1)                     # nE x nB x nP x nD
+            values = (Adb_g[:,new,:,:,:] * db_g[:,:,new,:,:]).sum(axis=-1)    # nE x nB x nB x nP
+
+        jac_det = jac_det[:,new,new,:]                               # nE x  1 x  1 x nP
+        qweights = qweights[new,new,new,:]                           #  1 x  1 x  1 x nP
+
+        entries = (values * jac_det * qweights).sum(axis=-1)     # nE x nB x nB
+
+        return self._assemble_operator(entries, d, mask)
+
+    def eval_l2_projection(self, f, d, mask=None):
+        # assemble L2 product
+        F = self.assemble_l2_product(f, d, mask)
+
+        #  assmeble mass matrix
+        M = self.assemble_mass_matrix(c=1, d=d, mask=mask)
+
+        U = np.zeros(np.size(F))
+        dof_map = self._get_dof_map(d)
+        I = np.setdiff1d(np.unique(np.abs(dof_map)), 0) - 1
+
+        M = M.tocsr()
+        F = F.tocsr()
+
+        U[I] = sparse.linalg.spsolve(M[I,:][:,I], F[I])
+
+        return U
+
+

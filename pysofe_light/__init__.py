@@ -15,3 +15,5 @@ import quadrature
 import spaces
 import utils
 import visualization
+
+from .visualization import show

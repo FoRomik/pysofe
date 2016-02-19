@@ -75,7 +75,7 @@ class Mesh(object):
         The incident vertex indices of the mesh facets.
         """
         # the mesh facets have topological codimension 1
-        return elf.topology.get_entities(d=self.dimension - 1)
+        return self.topology.get_entities(d=self.dimension - 1)
 
     @property
     def faces(self):

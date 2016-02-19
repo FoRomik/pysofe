@@ -74,7 +74,7 @@ class ReferenceMap(object):
 
         # get the vertex indices of the mesh entities onto which
         # the reference maps should be evaluated
-        vertices = self._mesh.Topology.get_entities(d=dim)
+        vertices = self._mesh.topology.get_entities(d=dim)
 
         # get the coordinates of all the entities' vertices
         coords = self._mesh.nodes.take(vertices - 1, axis=0)    # nE x nB x nD

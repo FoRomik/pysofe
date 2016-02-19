@@ -12,7 +12,7 @@ c = np.array([[1,2,3],[4,3,2]])
 m = pysofe.meshes.Mesh(n, c)
 
 # refine the mesh
-m.refine(times=1)
+#m.refine(times=1)
 
 # create fe space
 fes = pysofe.spaces.FESpace(m, p1)
