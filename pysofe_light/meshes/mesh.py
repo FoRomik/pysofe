@@ -93,6 +93,70 @@ class Mesh(object):
         # edges are mesh entities of topological dimension 1
         return self.topology.get_entities(d=1)
 
+    @property
+    def boundary(self):
+        """
+        The boundary facets of the mesh.
+        """
+        return self.topology.get_boundary(d=self.dimension-1)
+
+    def get_boundary(self, fnc=None, rtype='bool'):
+        """
+        Determines the facets that form the mesh boundary.
+
+        Parameters
+        ----------
+
+        fnc : callable
+            Function specifying some part of the boundary for which
+            to return the corresponding facets
+
+        rtype : str
+            The return type of the facets representation, either as
+            a boolean array ('bool') or as an array of indices ('index')
+        """
+
+        # get a mask specifying the boundary facets
+        boundary_mask = self.topology.get_boundary(d=self.dimension-1).astype(bool)
+
+        if fnc is not None:
+            assert callable(fnc)
+
+            # to determine the facets that belong to the desired
+            # part of the boundary we compute the centroids of
+            # all boundary facets and pass them as arguments to
+            # the given function which shall return True for all
+            # those that belong to the specified part
+
+            # to compute the centroids we need the vertex indices of
+            # every facet and the corresponding mesh node coordinates
+            facet_vertices = self.facets.compress(boundary_mask, axis=0)
+            facet_vertex_coordinates = self.nodes.take(facet_vertices - 1, axis=0)
+            centroids = facet_vertex_coordinates.mean(axis=1)
+
+            # pass them to the given function
+            try:
+                part_mask = fnc(centroids)
+            except:
+                # given function might not be vectorized
+                # so try looping over the centroids
+                # --> may be slow
+                ncentroids = np.size(centroids, axis=0)
+                part_mask = np.empty(shape=(ncentroids,), dtype=bool)
+
+                for i in xrange(ncentroids):
+                    part_mask[i] = fnc(centroids[i,:])
+
+            boundary_mask[boundary_mask] = np.logical_and(boundary_mask[boundary_mask], part_mask)
+
+        if rtype == 'bool':
+            return boundary_mask
+        elif rtype == 'index':
+            return self.facets.compress(boundary_mask, axis=0)
+        else:
+            raise ValueError('Invalid return type ({})'.format(rtype))
+
+
     def refine(self, method='uniform', **kwargs):
         """
         Refines the mesh using the given method.
@@ -104,3 +168,17 @@ class Mesh(object):
             A string specifying the refinement method to use
         """
         refinements.refine(mesh=self, method=method, inplace=True, **kwargs)
+
+    def eval_function(self, fnc, points):
+        """
+        Evaluates given function on the mesh using local points 
+        on the reference domain.
+        """
+
+        points = self.ref_map.eval(points)
+        points = np.vstack(points).T
+
+        values = fnc(points)
+
+        return values
+        
