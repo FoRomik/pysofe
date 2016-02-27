@@ -170,15 +170,92 @@ class Mesh(object):
         refinements.refine(mesh=self, method=method, inplace=True, **kwargs)
 
     def eval_function(self, fnc, points):
-        """
-        Evaluates given function on the mesh using local points 
-        on the reference domain.
-        """
+        '''
+        Evaluates given function on mesh w.r.t. given local points on reference element.
 
-        points = self.ref_map.eval(points)
-        points = np.vstack(points).T
+        Parameters
+        ----------
 
-        values = fnc(points)
+        fnc : callable
+            The function that should be evaluated
 
-        return values
+        points : array_like
+            The local points on the reference eleemnt
+        '''
+
+        # check if given function is callable or constant
+        if not callable(fnc):
+            if isinstance(fnc, (int, float)):
+                return fnc * np.ones((1,1))
+            else:
+                raise TypeError("Invalid function type for evaluation")
         
+        # compute the global counterparts to the given local points
+        P = self.ref_map.eval(points=points, d=0) # nE x nP x nD
+        nE, nP, nD = P.shape
+
+        # stack and transpose them so that they can be passed to the function
+        P = np.vstack(P).T    # nD x nE*nP
+
+        # evaluate the given function in each point
+        try:
+            F = fnc(P)    # fnc_nD x nE*nP
+        except Exception as err:
+            raise RuntimeError("Function evaluation returned error: {}".format(err.message))
+        
+        # get function image dimensions
+        # by passing only one point
+        f = np.atleast_1d(fnc(P.T[0][:,None]))
+        
+        fnc_ndim = f.ndim
+        fnc_shape = f.shape
+
+        # TODO: clarify why order C and not F???
+        if fnc_ndim == 1:
+            # assuming scalar
+            if F.shape[0] == 1:
+                # got back only one value
+                # so prepare for broadcasting
+                F = F[None,None]
+            else:
+                # assuming nE*nP values
+                F = F.reshape((nE, nP), order='C')
+        elif fnc_ndim == 2:
+            # assuming either vector or matrix
+            dim = self.dimension
+            
+            if F.shape[1] == 1:
+                # assuming vector
+                if F.shape[0] == dim:
+                    F = F[None,None,:]
+                else:
+                    F = F.reshape((nE, nP, dim), order='C')
+            elif F.shape[1] == dim:
+                # assuming matrix output
+                dim = self.dimension
+                if F.shape[:2] == (dim, dim):
+                    F = F[None,None]
+                else:
+                    F = F.reshape((nE, nP, dim, dim), order='C')
+        elif fnc_ndim == 3:
+            # assuming matrix (or vector)
+            dim = self.dimension
+
+            try:
+                F = F.reshape((nE, nP, dim, dim), order='C')
+            except Exception as err:
+                if F.shape[-2:] == (dim, dim):
+                    if F.shape[0] == 1:
+                        F = F[None,:,:,:]
+                    else:
+                        raise err
+                elif F.shape[-2:] == (dim, 1):
+                    if F.shape[0] == 1:
+                        F = F[None,:,:,0]
+                    elif F.shape[0] == nE*nP:
+                        F = F[:,:,0].reshape((nE, nP, dim))
+                    else:
+                        raise err
+                        
+        return F
+

@@ -7,6 +7,9 @@ import numpy as np
 
 from pysofe_light.elements.simple.lagrange import P1
 
+# DEBUGGING
+from IPython import embed as IPS
+
 class ReferenceMap(object):
     """
     Establishes a connection between the reference domain
@@ -89,6 +92,9 @@ class ReferenceMap(object):
             # basis: nB x nP x nD x nD
             maps = (coords[:,:,None,:,None, None] * basis[None,:,:,None,:,:]).sum(axis=1)
 
+        print 'REFMAP'
+        IPS()
+            
         return maps
 
     def eval_inverse(self, points, hosts):
@@ -146,7 +152,7 @@ class ReferenceMap(object):
         if jacs.shape[2] == 1:
             jacs_det = np.sqrt(np.power(jacs[...,0], 2).sum(axis=2))
         elif jacs.shape[2] == 2:
-            jacs_inv = np.linalg.det(jacs)
+            jacs_det = np.linalg.det(jacs)
         else:
             raise NotImplementedError("Jacobian determinant not available yet!")
 

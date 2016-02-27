@@ -4,11 +4,15 @@ Provides the data structures that represents a finite element space.
 
 # IMPORTS
 import numpy as np
+from numpy import newaxis as new
 
 from scipy import sparse
 
 from .. import quadrature
 from .manager import DOFManager
+
+# DEBUGGING
+from IPython import embed as IPS
 
 class FESpace(object):
     """
@@ -217,8 +221,8 @@ class FESpace(object):
         """
 
         # compute indices of the entries w.r.t. the dof map
-        dof_map = self.fe_space._get_dof_map(d)
-        n_dof = self.fe_space.n_dof
+        dof_map = self._get_dof_map(d, mask=None)
+        n_dof = self.n_dof
 
         if mask is not None:
             assert mask.ndim == 1
@@ -284,7 +288,7 @@ class FESpace(object):
     def assemble_l2_product(self, f, d, mask):
         # get quadrature points and weights for the integration
         qpoints, qweights = self._get_quadrature_data(d)    # nD x nP, nP
-        
+
         # get jacobian determinant for the integral transformation
         jac_det = self.mesh.ref_map.jacobian_determinant(points=qpoints)    # nE x nP
 

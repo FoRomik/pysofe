@@ -286,3 +286,208 @@ class ElementVisualizer(Visualizer):
                     fig.axes[i].set_title(r"$\psi_{{ {} }}$".format(indices[i]+1), fontsize=32)
     
         return fig, fig.axes
+
+class FunctionVisualizer(Visualizer):
+    '''
+    Base class for visualizing functions.
+    '''
+
+    def _plot(self, fnc, **kwargs):
+        '''
+        Plots the function.
+
+        Parameters
+        ----------
+
+        ...
+
+        '''
+
+        mode = kwargs.get('mode', 'trisurface')
+
+        # get visualization data
+        #----------------------------------------------------
+        if mode in ('trisurface', 'tripcolor', 'heatmap'):
+            # get points, values and triangles for the plot
+            points, values, cells = self._get_triangulation_data(**kwargs)
+            values = np.atleast_2d(values)
+        
+        else:
+            raise ValueError('Invalid visualization mode for functions! ({})'.format(mode))
+
+        # set up figure and axes
+        #----------------------------------------------------
+
+        # get number of plots
+        n_values = values.shape[0]
+        
+        layout = kwargs.get('layout', None)
+
+        if layout is None:
+            if n_values == 1:
+                nrows = 1
+                ncols = 1
+            elif 1 < n_values < 9:
+                nrows = int(np.ceil(n_values/2.))
+                ncols = 2
+            else:
+                nrows = int(np.ceil(n_values/3.))
+                ncols = 3
+        else:
+            nrows, ncols = layout
+
+        # create figure and subplots (if neccessary)
+        fig = kwargs.get('fig', None)
+        axes = kwargs.get('ax', None)
+        if axes is None:
+            if mode in ('trisurface', 'surface', 'wireframe'):
+                subplot_kw = {'projection' : '3d'}
+            else:
+                subplot_kw = {}
+            
+            fig, axes = plt.subplots(nrows, ncols, squeeze=False, subplot_kw=subplot_kw)
+        else:
+            axes = np.atleast_2d(axes)
+                
+            assert axes.ndim == 2
+            assert nrows <= axes.shape[0]
+            assert ncols <= axes.shape[1]
+        
+        # called plotting routine specified by `mode`
+        #----------------------------------------------------
+        if mode == 'trisurface':
+            self._plot_trisurf(axes=axes, X=points[0], Y=points[1], triangles=cells,
+                               Z=values, **kwargs)
+        elif mode in ('tripcolor', 'heatmap'):
+            self._plot_tripcolor(axes=axes, X=points[0], Y=points[1], triangles=cells,
+                                 Z=values, **kwargs)
+        elif mode == 'surface':
+            self._plot_surface(axes=axes, X=points[0], Y=points[1], Z=values, **kwargs)
+        elif mode == 'wireframe':
+            self._plot_wireframe(axes=axes, X=points[0], Y=points[1], Z=values, **kwargs)
+
+        return fig, axes
+
+    def _get_triangulation_data(self, **kwargs):
+        # generate local points for the function evaluation
+        n_sub_grid = kwargs.get('n_sub_grid', self.fnc.order + 1)
+            
+        local_points = sub_grid_nodes(n=n_sub_grid)
+        
+        # project them to their global counterparts
+        order = 'C'
+
+        points = self.fnc.fe_space.mesh.ref_map.eval(points=local_points, d=0)
+            
+        points = np.vstack([points[:,:,0].ravel(order=order), points[:,:,1].ravel(order=order)])
+
+        # get unique points indices
+        _, I = unique_rows(points.T, return_index=True)
+        points = points.take(I, axis=1)
+
+        # evaluate the function w.r.t the unique points
+        d = kwargs.get('d', 0)
+
+        if 0:
+            if isinstance(self.fnc, pysofe.spaces.functions.FEFunction):
+                eval_local = kwargs.get('eval_local', True)
+                
+                if eval_local:
+                    values = self.fnc(points=local_points, d=d, local=True)
+                else:
+                    values = self.fnc(points=points, d=d, local=False)
+            elif isinstance(self.fnc, pysofe.spaces.functions.MeshFunction):
+                values = self.fnc(points=points, d=d)
+        else:
+            fnc_args = kwargs.get('fnc_args', dict())
+            
+            if kwargs.get('eval_local', True):
+                values = self.fnc(points=local_points, d=d, local=True, **fnc_args)
+            else:
+                values = self.fnc(points=points, d=d, local=False, **fnc_args)
+                
+        if d == 0:
+            values = values.ravel(order=order).take(I, axis=0)
+        elif d == 1:
+            values = np.asarray([values.take(i, axis=-1).ravel(order=order).take(I, axis=0) for i in xrange(values.shape[-1])])
+        else:
+            raise ValueError('Invalid derivation order for visualization! ({})'.format(d))
+
+        # get cells corresponding to the unique points
+        from scipy.spatial import Delaunay
+        cells = Delaunay(points.T).simplices
+
+        return points, values, cells
+
+    def _plot_trisurf(self, axes, X, Y, triangles, Z, **kwargs):
+        '''
+        Wrapper for the :py:meth:`plot_trisurf` method of
+        the :py:class:`Axes3D` class.
+
+        Parameters
+        ----------
+
+        X, Y : array_like
+            1D arrays of the triangulation node coordinates
+
+        triangles : array_like
+            Connectivity array of the triangulation
+
+        Z : array_like
+            1D array of the values at the triangulation nodes
+        '''
+
+        # set default values
+        cmap = kwargs.get('cmap', cm.jet)
+    
+        # get layout
+        n_values = Z.shape[0]
+        nrows, ncols = axes.shape
+
+        # iterate over axes and plot
+        for i in xrange(nrows):
+            for j in xrange(ncols):
+                if i * ncols + j < n_values:
+                    # call mpl_toolkit's plot_trisurf
+                    axes[i,j].plot_trisurf(X, Y, triangles, Z[i * ncols + j],
+                                           shade=True, cmap=cmap,
+                                           linewidth=0., antialiased=False)
+
+    def _plot_tripcolor(self, axes, X, Y, triangles, Z, **kwargs):
+        '''
+        Wrapper for the :py:meth:`pyplot.tripcolor` method.
+
+        Parameters
+        ----------
+
+        X, Y : array_like
+            1D arrays of the triangulation node coordinates
+
+        triangles : array_like
+            Connectivity array of the triangulation
+
+        Z : array_like
+            1D array of the values at the triangulation nodes
+        '''
+
+        # set default values
+        shading = kwargs.get('shading', 'flat')
+        cmap = kwargs.get('cmap', cm.jet)
+        axis_off = kwargs.get('axis_off', True)
+        
+        # get layout
+        n_values = Z.shape[0]
+        nrows, ncols = axes.shape
+
+        # iterate over axes and plot
+        for i in xrange(nrows):
+            for j in xrange(ncols):
+                if i * ncols + j < n_values:
+                    # call matplotlib.pyplot's tripcolor
+                    axes[i,j].tripcolor(X, Y, triangles, Z[i * ncols + j],
+                                        shading=shading, cmap=cmap)
+
+                    if axis_off:
+                        # don't show axis
+                        axes[i,j].set_axis_off()
+

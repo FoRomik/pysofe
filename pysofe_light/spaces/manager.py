@@ -21,8 +21,8 @@ class DOFManager(object):
     """
 
     def __init__(self, mesh, element):
-        self._mesh = mesh
-        self._element = element
+        self.mesh = mesh
+        self.element = element
 
     def get_connectivity_array(self, d):
         """
@@ -37,15 +37,15 @@ class DOFManager(object):
         """
 
         dof_maps = self._compute_connectivity_array()
-        
-        return dof_maps[d]
+        codim = self.mesh.dimension - d
+        return dof_maps[codim]
 
     def get_n_dof(self):
         """
         Returns total number of degrees of freedom.
         """
 
-        n_dof = np.abs(self.get_connectivity_array(codim=0)).max()
+        n_dof = np.abs(self.get_connectivity_array(d=self.mesh.dimension)).max()
 
         return n_dof
 
@@ -69,7 +69,7 @@ class DOFManager(object):
 
         dofs = [None] * (global_dim + 1)
         for dim in xrange(global_dim + 1):
-            n_entities = self.mesh.Topology.get_entities(d=dim).shape[0]
+            n_entities = self.mesh.topology.get_entities(d=dim).shape[0]
             used = self.element.dof_tuple[dim] * n_entities
 
             dofs[dim] = np.reshape(n_dofs + np.arange(used, dtype=int) + 1, (-1, n_entities))
@@ -82,31 +82,31 @@ class DOFManager(object):
             DM[codim] = [None] * (dim + 1)
             for d in xrange(dim + 1):
                 if d == dim:
-                    n_entities = n_sub_entities = self.mesh.Topology.get_entities(d=d).shape[0]
+                    n_entities = n_sub_entities = self.mesh.topology.get_entities(d=d).shape[0]
                     connectivity = np.arange(n_entities, dtype=int)[:,None] + 1
                 else:
-                    connectivity = self.mesh.Topology.get_connectivity(d=dim, dd=d, return_indices=True)
+                    connectivity = self.mesh.topology.get_connectivity(d=dim, dd=d, return_indices=True)
                     n_entities, n_sub_entities = connectivity.shape
                 
                 n_dof_loc = dofs[d].shape[0]
 
                 DM[codim][d] = dofs[d].take(connectivity.T - 1, axis=1)
                 
-                # fix orientation
-                if self.mesh._is_sofe_compatible:
-                    if dim > d and d == 1:
-                        # fix edge orientation
-                        sign = self.mesh._orientation(d=1)
-                        if self.element.is_nodal:
-                            neg_sign = (sign.T < 0)
-                            DM[codim][d][:, neg_sign] = DM[codim][d][::-1, neg_sign]
-                        elif self.element.is_hierarchic:
-                            DM[codim][d][1:n_dof_loc:2] *= sign.T
-                        else:
-                            raise ValueError('Invalid element type.')
-                    elif dim > d and d == 2:
-                        # fix face orientation
-                        raise NotImplementedError()
+                # # fix orientation
+                # if self.mesh._is_sofe_compatible:
+                #     if dim > d and d == 1:
+                #         # fix edge orientation
+                #         sign = self.mesh._orientation(d=1)
+                #         if self.element.is_nodal:
+                #             neg_sign = (sign.T < 0)
+                #             DM[codim][d][:, neg_sign] = DM[codim][d][::-1, neg_sign]
+                #         elif self.element.is_hierarchic:
+                #             DM[codim][d][1:n_dof_loc:2] *= sign.T
+                #         else:
+                #             raise ValueError('Invalid element type.')
+                #     elif dim > d and d == 2:
+                #         # fix face orientation
+                #         raise NotImplementedError()
 
                 DM[codim][d] = DM[codim][d].reshape((-1, n_entities))
 

@@ -243,7 +243,10 @@ class MeshTopology(object):
         """
 
         if not d > dd:
-            raise ValueError("Returning indices only supported for downward incdence, yet!")
+            if d == 0:
+                assert dd == 0
+            else:
+                raise ValueError("Returning indices only supported for downward incdence, yet!")
 
         if self._incidence[d][dd] is None:
             self._compute_connectivity(d, dd)
