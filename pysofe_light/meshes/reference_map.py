@@ -20,24 +20,16 @@ class ReferenceMap(object):
 
     mesh : pysofe_light.meshes.mesh.Mesh
         The mesh instance
-
-    shape_elem : pysofe.elements.base.Element (optional)
-        Element specifying the shape of the reference domain
     """
 
-    def __init__(self, mesh, shape_elem=None):
+    def __init__(self, mesh):
         self._mesh = mesh
 
-        if shape_elem is not None:
-            self._shape_elem = shape_elem
-        else:
-            self._shape_elem = P1(dimension=mesh.dimension)
+        # currently only supports sraight sided elements
+        # hence linear shape element
+        self._shape_elem = P1(dimension=mesh.dimension)
 
-    @property
-    def shape_elem(self):
-        return self._shape_elem
-            
-    def eval(self, points, d=0, dim=None):
+    def eval(self, points, d=0):
         """
         Evaluates each member of the family of reference maps
         or their derivatives at given local points.
@@ -59,17 +51,18 @@ class ReferenceMap(object):
         d : int
             The derivation order
 
-        dim : int
-            The topological dimension of the entities
-            for which to evaluate the reference maps
+        Returns
+        -------
+        
+        numpy.ndarray
+            nE x nP x nD [x nD]
         """
 
         points = np.atleast_2d(points)
-        
-        if dim is not None:
-            assert dim == np.size(points, axis=0)
-        else:
-            dim = np.size(points, axis=0)
+
+        # determine topological dimension of the mesh entities
+        # onto which to map the given local points
+        dim = np.size(points, axis=0)
 
         # evaluate each basis function of the shape element or
         # their derivatives (according to the order `d`) in every point
@@ -90,16 +83,13 @@ class ReferenceMap(object):
             maps = (coords[:,:,None,:,None] * basis[None,:,:,None,:]).sum(axis=1)
         elif d == 2:
             # basis: nB x nP x nD x nD
-            maps = (coords[:,:,None,:,None, None] * basis[None,:,:,None,:,:]).sum(axis=1)
+            maps = (coords[:,:,None,:,None,None] * basis[None,:,:,None,:,:]).sum(axis=1)
 
-        print 'REFMAP'
-        IPS()
-            
         return maps
 
     def eval_inverse(self, points, hosts):
         """
-        Evaluates the inverse of the reference maps corresponding to the
+        Evaluates the inverse maps of the reference maps corresponding to the
         given host elements at given global points.
 
         Parameters
@@ -109,14 +99,15 @@ class ReferenceMap(object):
             The global points for which to evaluate the inverse mappings
 
         hosts : array_like
-            The host cell for each of the global points
+            The host element for each of the global points
         """
 
         raise NotImplementedError()
 
     def jacobian_inverse(self, points):
         """
-        Returns the inverse of the reference maps' jacobians evaluated at given points.
+        Returns the inverse of the reference maps' jacobians 
+        evaluated at given points.
 
         Parameters
         ----------
@@ -125,6 +116,7 @@ class ReferenceMap(object):
             The local points at which to evaluate the jacobians
         """
 
+        # evaluate 1st derivative of every reference map
         jacs = self.eval(points=points, d=1)
 
         if jacs.shape[2] == 1:
@@ -138,7 +130,8 @@ class ReferenceMap(object):
 
     def jacobian_determinant(self, points):
         """
-        Returns the determinants of the reference maps' jacobians evaluated at given points.
+        Returns the determinants of the reference maps' jacobians 
+        evaluated at given points.
 
         Parameters
         ----------

@@ -23,7 +23,7 @@ class MeshTopology(object):
     cells : array_like
         The connectivity array of the mesh cells
 
-    dim : int
+    dimension : int
         The spatial dimension of the mesh cells
     """
 
@@ -155,7 +155,8 @@ class MeshTopology(object):
         
     def get_boundary(self, d):
         """
-        Returns the boundary entities of topological dimension `d`.
+        Returns boolean array specifying the boundary entities 
+        of topological dimension `d`.
 
         Parameters
         ----------
@@ -222,13 +223,17 @@ class MeshTopology(object):
         else:
             # this should not be the case here
             assert not (d == 0 and dd == 0)
-            
-            # the computation always works the same way
-            # first get `d -> 0` and `0 -> dd` and then
-            # just intersect
-            self._compute_connectivity(d, 0)
-            self._compute_connectivity(0, dd)
-            self._intersection(d, dd, 0)
+
+            if True:
+                self._intersection(d, dd)
+            else:
+                # # the computation always works the same way
+                # # first get `d -> 0` and `0 -> dd` and then
+                # # just intersect
+                # self._compute_connectivity(d, 0)
+                # self._compute_connectivity(0, dd)
+                # self._intersection(d, dd, 0)
+                raise RuntimeError("This method of computing intersection is deprecated!")            
         
     def _get_indices(self, d, dd):
         """
@@ -335,7 +340,7 @@ class MeshTopology(object):
             msg = 'Incidence ({})->({}) is not available for transposing!'
             raise RuntimeError(msg.format(dd, d))
 
-    def _intersection(self, d, dd, ddd):
+    def _intersection(self, d, dd, ddd=0):
         """
         Computes the incidence relation `d -> dd` from `d -> ddd` and `ddd -> dd`
         for d >= dd.
@@ -349,6 +354,9 @@ class MeshTopology(object):
 
         assert d >= dd
 
+        if not ddd == 0:
+            raise RuntimeError("This method of computing intersection is deprecated!")
+        
         # we compute this intersection via the dot product of the two
         # incidence matrices for the relations `d -> ddd` and `ddd -> dd`
         # so we transfer them into a format more suitable for this
@@ -358,21 +366,42 @@ class MeshTopology(object):
 
         intersection = incidence_d_ddd.dot(incidence_ddd_dd)
 
+        # the resulting `intersection` array now shows
+        # for every `d` dimensional entity (represented by a row)
+        # how many entities of dimension `ddd` it shares with each
+        # of the `dd` dimensional entities (represented by the columns)
+        
         if d == dd:
-            # TODO: explain this and find alternative not involving .toarray()
-            intersection = np.mod(intersection.toarray(), self._n_vertices[d])
+            # there are two criteria to define when two entities of the
+            # same topological dimension `d == dd` are incident to each other
+            if True:
+                # the first is to define them incident if they share
+                # a `d-1` dimensional subentity
 
-            incidence_d_dd = sparse.lil_matrix(intersection.astype(bool))
+                # in the simplicial case and for `ddd == 0` a `d-1` dimensional
+                # subentity of a `d` dimensional entity is defined by `d` vertices
+                # (i.e. `d` 0-dimensional entities)
+                incidence_d_dd = (intersection == d).astype(bool).tolil()
+            else:
+                # the other one would be to define them incident if they share
+                # any subentity
+
+                # TODO: find alternative not involving .toarray()
+                intersection = np.mod(intersection.toarray(), self._n_vertices[d])
+
+                incidence_d_dd = sparse.lil_matrix(intersection.astype(bool))
         elif d > dd:
-            # in the simplicial case for `d > dd` the `d`-dimensional entities
-            # have `dd+1` subentities of topological dimension `dd`
+            # for `d > dd` an entity of topological dimension `dd` is incident
+            # to an entity of dimension `d` if all of its vertices (`ddd == 0`)
+            # also are vertices of the `d`-dimensional entity
+            
+            # in the simplicial case a `dd`-dimensional entity is defined by
+            # `dd + 1` vertices (`0`-dimensional entities)
+            # so the `dd`-dimensional subentities that are incident to
+            # the `d`-dimensional ones are those who intersect in `dd+1` vertices
+            
             # TODO: dissolve this restriction of simplicial case
-            n_subentities = dd + 1
-
-            # so the `dd`-dimensional entities that are incident with
-            # the `d`-dimensional ones are those where the two incidence
-            # matrices intersect `n_subentities` times
-            incidence_d_dd = (intersection == n_subentities).astype(bool).tolil()
+            incidence_d_dd = (intersection == dd + 1).astype(bool).tolil()
         else:
             raise RuntimeError("You shouldn't have gotten this far...?!")
         

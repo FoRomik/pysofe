@@ -35,6 +35,26 @@ class TestMeshTopology1D(object):
                                    [0,1,1],
                                    [0,0,1]]))
 
+    def test_incidence_1_1(self):
+        assert np.all(self.topo.get_connectivity(1,1).toarray()
+                      == np.array([[0,1,0],
+                                   [1,0,1],
+                                   [0,1,0]]))
+
+    def test_incidence_0_0(self):
+        assert np.all(self.topo.get_connectivity(0,0).toarray()
+                      == np.array([[1,0,0,0],
+                                   [0,1,0,0],
+                                   [0,0,1,0],
+                                   [0,0,0,1]]))
+
+    def test_boundary(self):
+        assert np.all(self.topo.get_boundary(0)
+                      == np.array([1,0,0,1]))
+
+        assert np.all(self.topo.get_boundary(1)
+                      == np.array([1,0,1]))
+        
 # the 2D test mesh
 #
 # 4---------3
@@ -94,13 +114,54 @@ class TestMeshTopology2D(object):
                                    [0,1,0,0,0,1,0,1],
                                    [0,0,1,0,1,0,1,1]]))
 
-    def test_incidence_2_1(self):
+    def test_incidence_2_1_and_1_2(self):
         assert np.all(self.topo.get_connectivity(2,1).toarray()
                       == np.array([[1,0,1,0,1,0,0,0],
                                    [0,0,0,1,1,0,1,0],
                                    [0,0,0,0,0,1,1,1],
                                    [0,1,1,0,0,0,0,1]]))
 
+        assert np.all(self.topo.get_connectivity(1,2).toarray()
+                      == np.array([[1,0,0,0],
+                                   [0,0,0,1],
+                                   [1,0,0,1],
+                                   [0,1,0,0],
+                                   [1,1,0,0],
+                                   [0,0,1,0],
+                                   [0,1,1,0],
+                                   [0,0,1,1]]))
+
+    def test_incidence_2_2(self):
+        assert np.all(self.topo.get_connectivity(2,2).toarray()
+                      == np.array([[0,1,0,1],
+                                   [1,0,1,0],
+                                   [0,1,0,1],
+                                   [1,0,1,0]]))
+
+    def test_incidence_1_1(self):
+        assert np.all(self.topo.get_connectivity(1,1).toarray()
+                      == np.array([[0,1,1,1,1,0,0,0],
+                                   [1,0,1,0,0,1,0,1],
+                                   [1,1,0,0,1,0,1,1],
+                                   [1,0,0,0,1,1,1,0],
+                                   [1,0,1,1,0,0,1,1],
+                                   [0,1,0,1,0,0,1,1],
+                                   [0,0,1,1,1,1,0,1],
+                                   [0,1,1,0,1,1,1,0]]))
+
+    def test_incidence_0_0(self):
+        assert np.all(self.topo.get_connectivity(0,0).toarray()
+                      == np.eye(5))
+
+    def test_boundary(self):
+        assert np.all(self.topo.get_boundary(0)
+                      == np.array([1,1,1,1,0]))
+        
+        assert np.all(self.topo.get_boundary(1)
+                      == np.array([1,1,0,1,0,1,0,0]))
+
+        assert np.all(self.topo.get_boundary(2)
+                      == np.array([1,1,1,1]))
         
 class TestMeshTopology3D(object):
     # the 3D test mesh connectivity array

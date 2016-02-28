@@ -8,8 +8,8 @@ from pysofe_light.spaces import FESpace
 
 # create shape element and mesh
 p1 = P1(dimension=2)
-nodes = np.array([[0.,0.],[1.,0.],[0.,1.],[1.,1.]])
-cells = np.array([[1,2,3],[4,3,2]])
+nodes = np.array([[0.], [1.]])
+cells = np.array([[1,2]])
 
 mesh = Mesh(nodes, cells)
 

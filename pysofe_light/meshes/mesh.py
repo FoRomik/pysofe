@@ -93,16 +93,10 @@ class Mesh(object):
         # edges are mesh entities of topological dimension 1
         return self.topology.get_entities(d=1)
 
-    @property
-    def boundary(self):
+    def boundary(self, fnc=None):
         """
-        The boundary facets of the mesh.
-        """
-        return self.topology.get_boundary(d=self.dimension-1)
-
-    def get_boundary(self, fnc=None, rtype='bool'):
-        """
-        Determines the facets that form the mesh boundary.
+        Determines the mesh facets that are part of the boundary specified
+        by the function `fnc` and returns a corresponding boolean array.
 
         Parameters
         ----------
@@ -110,14 +104,10 @@ class Mesh(object):
         fnc : callable
             Function specifying some part of the boundary for which
             to return the corresponding facets
-
-        rtype : str
-            The return type of the facets representation, either as
-            a boolean array ('bool') or as an array of indices ('index')
         """
 
         # get a mask specifying the boundary facets
-        boundary_mask = self.topology.get_boundary(d=self.dimension-1).astype(bool)
+        boundary_mask = self.topology.get_boundary(d=self.dimension-1)
 
         if fnc is not None:
             assert callable(fnc)
@@ -129,14 +119,14 @@ class Mesh(object):
             # those that belong to the specified part
 
             # to compute the centroids we need the vertex indices of
-            # every facet and the corresponding mesh node coordinates
+            # every facet and the corresponding node coordinates
             facet_vertices = self.facets.compress(boundary_mask, axis=0)
             facet_vertex_coordinates = self.nodes.take(facet_vertices - 1, axis=0)
             centroids = facet_vertex_coordinates.mean(axis=1)
 
-            # pass them to the given function
+            # pass them to the given function (column-wise)
             try:
-                part_mask = fnc(centroids)
+                part_mask = fnc(centroids.T)
             except:
                 # given function might not be vectorized
                 # so try looping over the centroids
@@ -149,13 +139,7 @@ class Mesh(object):
 
             boundary_mask[boundary_mask] = np.logical_and(boundary_mask[boundary_mask], part_mask)
 
-        if rtype == 'bool':
-            return boundary_mask
-        elif rtype == 'index':
-            return self.facets.compress(boundary_mask, axis=0)
-        else:
-            raise ValueError('Invalid return type ({})'.format(rtype))
-
+        return boundary_mask
 
     def refine(self, method='uniform', **kwargs):
         """
@@ -170,92 +154,19 @@ class Mesh(object):
         refinements.refine(mesh=self, method=method, inplace=True, **kwargs)
 
     def eval_function(self, fnc, points):
-        '''
-        Evaluates given function on mesh w.r.t. given local points on reference element.
+        """
+        Evaluates a given function in the global mesh points corresponding
+        to the given local points on the reference domain.
 
         Parameters
         ----------
 
         fnc : callable
-            The function that should be evaluated
+            The function to evaluate
 
         points : array_like
-            The local points on the reference eleemnt
-        '''
-
-        # check if given function is callable or constant
-        if not callable(fnc):
-            if isinstance(fnc, (int, float)):
-                return fnc * np.ones((1,1))
-            else:
-                raise TypeError("Invalid function type for evaluation")
-        
-        # compute the global counterparts to the given local points
-        P = self.ref_map.eval(points=points, d=0) # nE x nP x nD
-        nE, nP, nD = P.shape
-
-        # stack and transpose them so that they can be passed to the function
-        P = np.vstack(P).T    # nD x nE*nP
-
-        # evaluate the given function in each point
-        try:
-            F = fnc(P)    # fnc_nD x nE*nP
-        except Exception as err:
-            raise RuntimeError("Function evaluation returned error: {}".format(err.message))
-        
-        # get function image dimensions
-        # by passing only one point
-        f = np.atleast_1d(fnc(P.T[0][:,None]))
-        
-        fnc_ndim = f.ndim
-        fnc_shape = f.shape
-
-        # TODO: clarify why order C and not F???
-        if fnc_ndim == 1:
-            # assuming scalar
-            if F.shape[0] == 1:
-                # got back only one value
-                # so prepare for broadcasting
-                F = F[None,None]
-            else:
-                # assuming nE*nP values
-                F = F.reshape((nE, nP), order='C')
-        elif fnc_ndim == 2:
-            # assuming either vector or matrix
-            dim = self.dimension
-            
-            if F.shape[1] == 1:
-                # assuming vector
-                if F.shape[0] == dim:
-                    F = F[None,None,:]
-                else:
-                    F = F.reshape((nE, nP, dim), order='C')
-            elif F.shape[1] == dim:
-                # assuming matrix output
-                dim = self.dimension
-                if F.shape[:2] == (dim, dim):
-                    F = F[None,None]
-                else:
-                    F = F.reshape((nE, nP, dim, dim), order='C')
-        elif fnc_ndim == 3:
-            # assuming matrix (or vector)
-            dim = self.dimension
-
-            try:
-                F = F.reshape((nE, nP, dim, dim), order='C')
-            except Exception as err:
-                if F.shape[-2:] == (dim, dim):
-                    if F.shape[0] == 1:
-                        F = F[None,:,:,:]
-                    else:
-                        raise err
-                elif F.shape[-2:] == (dim, 1):
-                    if F.shape[0] == 1:
-                        F = F[None,:,:,0]
-                    elif F.shape[0] == nE*nP:
-                        F = F[:,:,0].reshape((nE, nP, dim))
-                    else:
-                        raise err
-                        
-        return F
+            The local points on the reference domain
+        """
+        raise NotImplementedError()
+    
 
