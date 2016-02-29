@@ -5,6 +5,9 @@ Provides the data structure for the degrees of freedom manager.
 # IMPORTS
 import numpy as np
 
+# DEBUGGING
+from IPython import embed as IPS
+
 class DOFManager(object):
     """
     Connects the finite element mesh and reference element
@@ -21,8 +24,8 @@ class DOFManager(object):
     """
 
     def __init__(self, mesh, element):
-        self.mesh = mesh
-        self.element = element
+        self._mesh = mesh
+        self._element = element
 
     def get_connectivity_array(self, d):
         """
@@ -37,8 +40,8 @@ class DOFManager(object):
         """
 
         dof_maps = self._compute_connectivity_array()
-        codim = self.mesh.dimension - d
-        return dof_maps[codim]
+
+        return dof_maps[d]
 
     def get_n_dof(self):
         """
@@ -61,56 +64,80 @@ class DOFManager(object):
         # of dofs will be done according to the following order:
         # 1.) components (scalar- or vector-valued)
         # 2.) entities
-        # 3.) dimension (vertices, edges, cells)
+        # 3.) topological dimension (vertices, edges, cells)
 
         # first the assignment of new dofs
-        global_dim = self.mesh.dimension
+        #----------------------------------
+        global_dim = self._mesh.dimension
+
+        # init n_dofs and a list that will hold the dof indices
+        # that will be assigned to the entities of each topological
+        # dimension
         n_dofs = 0
-
         dofs = [None] * (global_dim + 1)
-        for dim in xrange(global_dim + 1):
-            n_entities = self.mesh.topology.get_entities(d=dim).shape[0]
-            used = self.element.dof_tuple[dim] * n_entities
 
-            dofs[dim] = np.reshape(n_dofs + np.arange(used, dtype=int) + 1, (-1, n_entities))
-            n_dofs += used
+        # iterate through all topological dimensions and generate
+        # the needed dof indices
+        for topo_dim in xrange(global_dim + 1):
+            # first we need the number of entities of the current
+            # topological dimension
+            n_entities = self._mesh.topology.n_entities[topo_dim]
 
+            # the entry in the dof tuple specifies how many dofs are
+            # associated with one entity of the current topological dimension
+            dofs_needed = self._element.dof_tuple[topo_dim] * n_entities
+
+            # generate the new dof indices starting with the current
+            # number of dofs generated
+            new_dofs = n_dofs + 1 + np.arange(dofs_needed, dtype=int)
+
+            # reshape them such that the dofs that correspond to one
+            # entity are contained in the corresponding column
+            dofs[topo_dim] = new_dofs.reshape((-1, n_entities))
+
+            # raise the number of generated dofs
+            n_dofs += dofs_needed
+
+        # the dof index arrays listed in `dofs` now contain column-wise
+        # the dof indices for each entity of the corresponding topological
+        # dimension
+            
         # assemble dof maps
-        DM = [None] * (global_dim + 1)
-        for dim in xrange(global_dim + 1):
-            codim = global_dim - dim
-            DM[codim] = [None] * (dim + 1)
-            for d in xrange(dim + 1):
-                if d == dim:
-                    n_entities = n_sub_entities = self.mesh.topology.get_entities(d=d).shape[0]
-                    connectivity = np.arange(n_entities, dtype=int)[:,None] + 1
+        #-------------------
+
+        # init list that will hold the connectivity arrays
+        # for each topological dimension
+        dof_map = [None] * (global_dim + 1)
+
+        # iterate through the topological dimensions
+        # and assemble the dof map for the associated entities
+        for entity_dim in xrange(global_dim + 1):
+            # init a template for the dof map of the
+            # currently considered entities
+            temp = [None] * (entity_dim + 1)
+
+            # iterate over all sub-entities (using their dimension)
+            # of the currently considered entities and
+            # add the corresponding dof indices from the
+            # dof index array to the template
+            for sub_dim in xrange(entity_dim + 1):
+                # first we need to get the incidence relation
+                # `entity_dim -> sub_dim`
+                if sub_dim < entity_dim:
+                    incidence = self._mesh.topology.get_connectivity(d=entity_dim,
+                                                                     dd=sub_dim,
+                                                                     return_indices=True)
+                    n_entities = incidence.shape[0]
                 else:
-                    connectivity = self.mesh.topology.get_connectivity(d=dim, dd=d, return_indices=True)
-                    n_entities, n_sub_entities = connectivity.shape
-                
-                n_dof_loc = dofs[d].shape[0]
+                    assert sub_dim == entity_dim
+                    n_entities = self._mesh.topology.n_entities[entity_dim]
+                    incidence = 1 + np.arange(n_entities, dtype=int)[:,None]
 
-                DM[codim][d] = dofs[d].take(connectivity.T - 1, axis=1)
-                
-                # # fix orientation
-                # if self.mesh._is_sofe_compatible:
-                #     if dim > d and d == 1:
-                #         # fix edge orientation
-                #         sign = self.mesh._orientation(d=1)
-                #         if self.element.is_nodal:
-                #             neg_sign = (sign.T < 0)
-                #             DM[codim][d][:, neg_sign] = DM[codim][d][::-1, neg_sign]
-                #         elif self.element.is_hierarchic:
-                #             DM[codim][d][1:n_dof_loc:2] *= sign.T
-                #         else:
-                #             raise ValueError('Invalid element type.')
-                #     elif dim > d and d == 2:
-                #         # fix face orientation
-                #         raise NotImplementedError()
+                # now we take the corresponding dof indices
+                # and add them to the template
+                sub_dim_dofs = dofs[sub_dim].take(incidence.T - 1, axis=1)
+                temp[sub_dim] = np.reshape(sub_dim_dofs, newshape=(-1, n_entities))
 
-                DM[codim][d] = DM[codim][d].reshape((-1, n_entities))
+            dof_map[entity_dim] = np.vstack(temp)
 
-            DM[codim] = np.vstack(DM[codim])
-
-        #self._connectivity_arrays = DM
-        return DM
+        return dof_map

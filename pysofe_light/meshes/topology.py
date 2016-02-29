@@ -112,6 +112,22 @@ class MeshTopology(object):
         self._incidence[self._dimension][0] = D_to_O.tolil()
         self._incidence[0][self._dimension] = O_to_D.tolil()
         
+    @property
+    def n_entities(self):
+        """
+        The numbers of elements for every topological dimension
+        """
+
+        # make sure the relation `d -> 0` is already
+        # computed for each dimension
+        for d in xrange(self._dimension + 1):
+            self._compute_connectivity(d=d, dd=0)
+            
+        n_entities = tuple([self._incidence[d][0].shape[0]
+                            for d in xrange(self._dimension + 1)])
+
+        return n_entities
+    
     def get_connectivity(self, d, dd, return_indices=False):
         """
         Returns the incidence relation `d -> dd`, 
