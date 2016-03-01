@@ -48,7 +48,7 @@ class DOFManager(object):
         Returns total number of degrees of freedom.
         """
 
-        n_dof = np.abs(self.get_connectivity_array(d=self.mesh.dimension)).max()
+        n_dof = np.abs(self.get_connectivity_array(d=self._mesh.dimension)).max()
 
         return n_dof
 
