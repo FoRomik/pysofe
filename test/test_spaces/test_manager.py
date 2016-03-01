@@ -39,7 +39,7 @@ mesh_3d = Mesh(nodes_3d, cells_3d)
 elem_3d = Element(dimension=4, order=4, n_basis=(5, 15, 35), n_verts=4)
 elem_3d._dof_tuple = (1, 3, 3, 1)
 
-class TestDOFManager1D(object):
+class TestDOFManager1DP3(object):
     dm = DOFManager(mesh_1d, elem_1d)
 
     def test_n_dof(self):
@@ -59,7 +59,7 @@ class TestDOFManager1D(object):
                                            [5, 6, 7],
                                            [8, 9, 10]]))
 
-class TestDOFManager2D(object):
+class TestDOFManager2DP3(object):
     dm = DOFManager(mesh_2d, elem_2d)
 
     def test_n_dof(self):
@@ -94,7 +94,7 @@ class TestDOFManager2D(object):
                                            [12, 14],
                                            [15, 16]]))
 
-class TestDOFManager3D(object):
+class TestDOFManager3DP4(object):
     dm = DOFManager(mesh_3d, elem_3d)
 
     def test_n_dof(self):
