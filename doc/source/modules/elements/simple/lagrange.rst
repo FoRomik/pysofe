@@ -1,10 +1,15 @@
 .. _modules_elements_simple_lagrange:
 
-:mod:`elements.simple.lagrange` Module
-======================================
+:mod:`lagrange` Module
+======================
 
-:class:`elements.simple.lagrange.P1` Class
-------------------------------------------
+Provides *Lagrange* type elements for simplicial domains
+For this type of element each basis function is associated
+with a node on the domain where it is equal to one and vanishes
+at all other nodes.
+
+:class:`P1` Class
+-----------------
 
 .. tikz::
    \draw (0,0) -- (1,0) -- (0,1) -- (0,0);

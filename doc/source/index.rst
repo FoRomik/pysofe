@@ -3,14 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pysofe_light's documentation!
-========================================
+Welcome to Py\ **SOFE**\ *light*'s documentation!
+=================================================
 
 .. warning::
    This documentation is under construction and does not cover every
    functionality and theoretical background information at all!
-
-Contents:
 
 .. toctree::
    :maxdepth: 2

@@ -6,3 +6,4 @@
 .. automodule:: pysofe_light.elements.base
    :members:
    :member-order: bysource
+

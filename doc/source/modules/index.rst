@@ -1,9 +1,10 @@
 .. _modules:
 
-pysofe_light Modules Reference
-==============================
+Py\ **SOFE**\ *light* Modules Reference
+=======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    elements/index
+   meshes/index
