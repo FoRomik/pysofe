@@ -4,6 +4,7 @@ Provides the data structure for the degrees of freedom manager.
 
 # IMPORTS
 import numpy as np
+from scipy import sparse
 
 # DEBUGGING
 from IPython import embed as IPS

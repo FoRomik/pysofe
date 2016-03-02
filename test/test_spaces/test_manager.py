@@ -59,6 +59,18 @@ class TestDOFManager1DP3(object):
                                            [5, 6, 7],
                                            [8, 9, 10]]))
 
+    def test_extract_dofs_vertices(self):
+        dofs = self.dm.extract_dofs(d=0)
+
+        assert np.allclose(dofs, np.array([True,  True,  True,  True, False,
+                                           False, False, False, False, False]))
+
+    def test_extract_dofs_edges(self):
+        dofs = self.dm.extract_dofs(d=1)
+
+        assert np.allclose(dofs, np.array([True, True, True, True, True,
+                                           True, True, True, True, True]))
+
 class TestDOFManager2DP3(object):
     dm = DOFManager(mesh_2d, elem_2d)
 
@@ -93,6 +105,30 @@ class TestDOFManager2DP3(object):
                                            [11, 13],
                                            [12, 14],
                                            [15, 16]]))
+
+    def test_extract_dofs_vertices(self):
+        dofs = self.dm.extract_dofs(d=0)
+
+        assert np.allclose(dofs, np.array([True,  True,  True,  True,
+                                           False, False, False, False,
+                                           False, False, False, False,
+                                           False, False, False, False]))
+
+    def test_extract_dofs_edges(self):
+        dofs = self.dm.extract_dofs(d=1)
+
+        assert np.allclose(dofs, np.array([True, True, True, True,
+                                           True, True, True, True,
+                                           True, True, True, True,
+                                           True, True, False, False]))
+
+    def test_extract_dofs_cells(self):
+        dofs = self.dm.extract_dofs(d=2)
+
+        assert np.allclose(dofs, np.array([True, True, True, True,
+                                           True, True, True, True,
+                                           True, True, True, True,
+                                           True, True, True, True]))
 
 class TestDOFManager3DP4(object):
     dm = DOFManager(mesh_3d, elem_3d)
