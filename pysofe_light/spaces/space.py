@@ -7,13 +7,13 @@ import numpy as np
 
 from scipy import sparse
 
-from .. import quadrature
 from .manager import DOFManager
+from .. import quadrature
 
 # DEBUGGING
 from IPython import embed as IPS
 
-class FESpace(object):
+class FESpace(DOFManager):
     """
     Base class for all finite element spaces.
 
@@ -31,59 +31,10 @@ class FESpace(object):
     """
 
     def __init__(self, mesh, element):
-        # consistency check
-        if not mesh.dimension == element.dimension:
-            msg = "Dimension mismatch between mesh and reference element! ({}/{})"
-            raise ValueError(msg.format(mesh.dimension, element.dimension))
-        elif not mesh.ref_map.shape_elem.n_verts == element.n_verts:
-            raise ValueError("Incompatible shapes between mesh and reference element!")
-
-        self.mesh = mesh
-        self.element = element
-
-        # get the degrees of freedom manager
-        self.dof_manager = DOFManager(mesh, element)
-
+        DOFManager.__init__(self, mesh, element)
+        
         # get quadrature rule
         self.quad_rules = self._get_quadrature_rules()
-
-    @property
-    def n_dof(self):
-        """
-        The total number of degrees of freedom
-        """
-        return self.dof_manager.get_n_dof()
-
-    def _get_dof_map(self, d, mask):
-        """
-        Returns the degrees of freedom mapping that connects the global mesh
-        entities of topological dimension `d` to the local reference element.
-        
-        Parameters
-        ----------
-        
-        d : int
-            The topological dimension of the entities for which to return
-            the degrees of freedom mapping
-
-        mask : array_like
-            An 1d array marking certain entities of which to get the dof map
-        """
-        
-        dof_map = self.dof_manager.get_connectivity_array(d=d)
-
-        if mask is not None:
-            mask = np.asarray(mask)
-            assert mask.ndim == 1
-
-            if mask.dtype == bool:
-                dof_map = dof_map.compress(mask, axis=1)
-            elif mask.dtype == int:
-                dof_map = dof_map.take(mask, axis=1)
-            else:
-                raise TypeError("Invalid type of mask! ({})".format(mask.dtype))
-        
-        return dof_map
 
     def _get_quadrature_rules(self):
         """
@@ -121,41 +72,6 @@ class FESpace(object):
         weights = self.quad_rules[d].weights
 
         return points, weights
-
-    def extract_dofs(self, d, mask=None):
-        """
-        Returns a boolean array specifying the degrees of freedom 
-        associated with the mesh entities of topological dimension `d`.
-
-        Parameters
-        ----------
-
-        d : int
-            The topological dimension of the mesh entities
-
-        mask : array_like
-            An 1d array marking certain entities of which to get the dofs
-        """
-
-        # first we need the dof map
-        dof_map = self._get_dof_map(d, mask)
-        n_dof = self.n_dof
-
-        # remove duplicates and dofs mapped to `0`
-        dofs = np.unique(dof_map)
-        dofs = np.setdiff1d(dofs, 0)
-
-        # build array using coo sparse matrix capabilities
-        col_ind = dofs - 1
-        row_ind = np.zeros_like(col_ind)
-        data = np.ones_like(col_ind, dtype=bool)
-
-        dofs = sparse.coo_matrix((data, (row_ind, col_ind)), shape=(1, n_dof))
-
-        # turn it into an 1d array
-        dofs = dofs.toarray().ravel()
-        
-        return dofs
 
     def eval_global_derivatives(self, points, d=1):
         """
