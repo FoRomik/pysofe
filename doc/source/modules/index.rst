@@ -8,3 +8,6 @@ Py\ **SOFE**\ *light* Modules Reference
 
    elements/index
    meshes/index
+   quadrature/index
+   spaces/index
+   utils

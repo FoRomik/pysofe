@@ -1,5 +1,6 @@
 """
-Provides some helper functions.
+Provides some auxilliary functions that are used in various
+points in the software.
 """
 
 import numpy as np

@@ -3,12 +3,13 @@
 :mod:`meshes` Module
 ====================
 
-This module provides all the data structures that are neccessary
-or useful for the mesh of the FEM.
+.. automodule:: pysofe_light.meshes
 
 .. toctree::
    :maxdepth: 1
 
+   mesh
    geometry
    topology
+   reference_map
    
