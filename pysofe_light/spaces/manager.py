@@ -28,7 +28,7 @@ class DOFManager(object):
         if not mesh.dimension == element.dimension:
             msg = "Dimension mismatch between mesh and reference element! ({}/{})"
             raise ValueError(msg.format(mesh.dimension, element.dimension))
-        elif not mesh.ref_map.shape_elem.n_verts == element.n_verts:
+        elif not mesh.ref_map._shape_elem.n_verts == element.n_verts:
             msg = "Incompatible shapes between mesh and reference element!"
             raise ValueError(msg)
 
@@ -53,7 +53,7 @@ class DOFManager(object):
 
         return n_dof
 
-    def get_dof_map(self, d, mask):
+    def get_dof_map(self, d, mask=None):
         """
         Returns the degrees of freedom mapping that connects the global mesh
         entities of topological dimension `d` to the local reference element.
