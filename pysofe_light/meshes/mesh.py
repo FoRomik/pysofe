@@ -167,6 +167,60 @@ class Mesh(object):
         points : array_like
             The local points on the reference domain
         """
-        raise NotImplementedError()
-    
 
+        # first we need the global counterparts to the given local points
+        # --> nE x nP x nD
+        global_points = self.ref_map.eval(points, d=0)
+        nE, nP, nD = global_points.shape
+
+        # stack and transpose them so they can be passed to the function
+        # --> nD x (nE * nP)
+        global_points = np.vstack(global_points).T
+        assert global_points.shape == (nD, nE * nP)
+
+        # evaluate the function
+        if callable(fnc):
+            # if the given function is callable, call it
+            try:
+                values = fnc(global_points)
+            except Exception as err:
+                # TODO: maybe do some stuff here...
+                raise err
+
+            # we are assuming it is a scalar function
+            # TODO: add test or get rid of this restriction?
+            values = values.reshape((nE, nP, -1))
+
+        else:
+            values = np.zeros((nE, nP))
+            
+            if np.isscalar(fnc):
+                # if the given function is somehow constant
+                # return a broadcasted version that matches the
+                # return shape nE x nP x 1
+                _, values = np.broadcast_arrays(values[:,:,None],
+                                                np.asarray(fnc))
+            elif isinstance(fnc, (np.ndarray, list, tuple)):
+                # if it is an array like object (assuming vector or matrix)
+                # also broadcast it
+
+                if not isinstance(fnc, np.ndarray):
+                    fnc = np.asarray(fnc)
+                
+                ndim = fnc.ndim
+
+                if ndim == 1:
+                    # assuming vector
+                    _, values = np.broadcast_arrays(values[:,:,None],
+                                                    fnc[None,None,:])
+                elif ndim == 2:
+                    # assuming matrix
+                    _, values = np.broadcast_arrays(values[:,:,None,None],
+                                                    fnc[None,None,:,:])
+                else:
+                    raise ValueError("Invalid number of dimensions of fnc!")
+
+            else:
+                raise TypeError("Invalid function type!")
+
+        return values
