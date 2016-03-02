@@ -9,6 +9,14 @@ class Element(object):
     """
     Provides an abstract base class for all reference elements.
 
+    Derived classes have to implement the methods
+
+    * :py:meth:`_eval_d0_basis(points)`
+    * :py:meth:`_eval_d1_basis(points)`
+    * :py:meth:`_eval_d2_basis(points)`
+
+    that evaluate the basis functions or their derivatives.
+
     Parameters
     ----------
 
@@ -20,7 +28,7 @@ class Element(object):
 
     n_basis : iterable
         The number of basis functions related to the entities of
-        every spatial dimension (starting with dimension 0)
+        every topological dimension
 
     n_verts : iterable
         The number of vertices for the entities of
