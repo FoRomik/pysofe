@@ -1,4 +1,4 @@
-.. _modules_space:
+.. _modules_spaces:
 
 :mod:`spaces` Module
 ====================
@@ -10,3 +10,4 @@
 
    space
    manager
+   operators

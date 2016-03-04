@@ -170,7 +170,7 @@ class Mesh(object):
 
         # first we need the global counterparts to the given local points
         # --> nE x nP x nD
-        global_points = self.ref_map.eval(points, d=0)
+        global_points = self.ref_map.eval(points, deriv=0)
         nE, nP, nD = global_points.shape
 
         # stack and transpose them so they can be passed to the function
