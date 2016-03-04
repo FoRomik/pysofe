@@ -29,7 +29,7 @@ class ReferenceMap(object):
         # hence linear shape element
         self._shape_elem = P1(dimension=mesh.dimension)
 
-    def eval(self, points, d=0):
+    def eval(self, points, deriv=0):
         """
         Evaluates each member of the family of reference maps
         or their derivatives at given local points.
@@ -48,7 +48,7 @@ class ReferenceMap(object):
         points : array_like
             The local points at which to evaluate
         
-        d : int
+        deriv : int
             The derivation order
 
         Returns
@@ -65,8 +65,8 @@ class ReferenceMap(object):
         dim = np.size(points, axis=0)
 
         # evaluate each basis function of the shape element or
-        # their derivatives (according to the order `d`) in every point
-        basis = self._shape_elem.eval_basis(points, d=d) # nB x nP [x nD[x nD]]
+        # their derivatives (according to the order `deriv`) in every point
+        basis = self._shape_elem.eval_basis(points, deriv) # nB x nP [x nD[x nD]]
 
         # get the vertex indices of the mesh entities onto which
         # the reference maps should be evaluated
@@ -75,13 +75,13 @@ class ReferenceMap(object):
         # get the coordinates of all the entities' vertices
         coords = self._mesh.nodes.take(vertices - 1, axis=0)    # nE x nB x nD
 
-        if d == 0:
+        if deriv == 0:
             # basis: nB x nP
             maps = (coords[:,:,None,:] * basis[None,:,:,None]).sum(axis=1)
-        elif d == 1:
+        elif deriv == 1:
             # basis: nB x nP x nD
             maps = (coords[:,:,None,:,None] * basis[None,:,:,None,:]).sum(axis=1)
-        elif d == 2:
+        elif deriv == 2:
             # basis: nB x nP x nD x nD
             maps = (coords[:,:,None,:,None,None] * basis[None,:,:,None,:,:]).sum(axis=1)
 
@@ -117,7 +117,7 @@ class ReferenceMap(object):
         """
 
         # evaluate 1st derivative of every reference map
-        jacs = self.eval(points=points, d=1)
+        jacs = self.eval(points=points, deriv=1)
 
         if jacs.shape[2] == 1:
             jacs_inv = 1./jacs
@@ -140,7 +140,7 @@ class ReferenceMap(object):
             The local points at which to compute the determinants
         """
 
-        jacs = self.eval(points=points, d=1)
+        jacs = self.eval(points=points, deriv=1)
 
         if jacs.shape[2] == 1:
             jacs_det = np.sqrt(np.power(jacs[...,0], 2).sum(axis=2))

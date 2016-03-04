@@ -30,7 +30,7 @@ class TestLagrangeP1(object):
         failed = []
         
         for dim in xrange(1, self.elem.dimension + 1):
-            basis = self.elem.eval_basis(points=simplicial_vertices[dim], d=0)
+            basis = self.elem.eval_basis(points=simplicial_vertices[dim], deriv=0)
 
             try:
                 assert basis.shape == (dim+1, dim+1)
@@ -48,7 +48,7 @@ class TestLagrangeP1(object):
         failed = []
         
         for dim in xrange(1, self.elem.dimension + 1):
-            dbasis = self.elem.eval_basis(points=simplicial_vertices[dim], d=1)
+            dbasis = self.elem.eval_basis(points=simplicial_vertices[dim], deriv=1)
             nV = dim + 1
 
             try:
@@ -85,7 +85,7 @@ class TestLagrangeP1(object):
         failed = []
         
         for dim in xrange(1, self.elem.dimension + 1):
-            ddbasis = self.elem.eval_basis(points=simplicial_vertices[dim], d=2)
+            ddbasis = self.elem.eval_basis(points=simplicial_vertices[dim], deriv=2)
             nV = dim + 1
             
             try:

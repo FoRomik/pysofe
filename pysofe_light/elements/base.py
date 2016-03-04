@@ -85,7 +85,7 @@ class Element(object):
         """
         return self._dof_tuple
         
-    def eval_basis(self, points, d=0):
+    def eval_basis(self, points, deriv=0):
         """
         Evaluates the element's basis functions or their derivatives
         at given local points on the reference domain.
@@ -96,7 +96,7 @@ class Element(object):
         points : array_like
             The local points at which to evaluate the basis functions
 
-        d : int
+        deriv : int
             The derivation order
         """
 
@@ -110,14 +110,14 @@ class Element(object):
             raise ValueError("Invalid dimension of given points ({})".format(points.shape[0]))
 
         # call evaluation method according to derivation order
-        if d == 0:
+        if deriv == 0:
             return self._eval_d0basis(points)
-        elif d == 1:
+        elif deriv == 1:
             return self._eval_d1basis(points)
-        elif d == 2:
+        elif deriv == 2:
             return self._eval_d2basis(points)
         else:
-            raise ValueError("Invalid derivation order ({})".format(d))
+            raise ValueError("Invalid derivation order ({})".format(deriv))
 
     def _eval_d0basis(self, points):
         """

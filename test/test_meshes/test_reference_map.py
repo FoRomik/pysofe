@@ -45,7 +45,7 @@ class TestReferenceMap2D(object):
     def test_d0_evaluation_to_elems(self):
         # evaluating ref map with reference domain
         # 2d vertices should give mesh cell nodes
-        RM = self.ref_map.eval(points=verts_2d, d=0)
+        RM = self.ref_map.eval(points=verts_2d, deriv=0)
 
         nE = self.mesh.cells.shape[0]
         nD = self.mesh.dimension
@@ -57,7 +57,7 @@ class TestReferenceMap2D(object):
     def test_d0_evaluation_to_edges(self):
         # evaluating ref map with reference domain
         # 1d vertices should give mesh edges nodes
-        RM = self.ref_map.eval(points=verts_1d, d=0)
+        RM = self.ref_map.eval(points=verts_1d, deriv=0)
 
         nE = self.mesh.edges.shape[0]
         nD = self.mesh.dimension
@@ -69,7 +69,7 @@ class TestReferenceMap2D(object):
     def test_d1_evaluation_to_cells(self):
         # evaluating ref map 1st derivative to cells should give matrix
         # that has scaled basis vectors of cell coordinate systems as columns
-        dRM = self.ref_map.eval(points=verts_2d, d=1)
+        dRM = self.ref_map.eval(points=verts_2d, deriv=1)
 
         nE = self.mesh.cells.shape[0]
         nD = self.mesh.dimension
@@ -86,7 +86,7 @@ class TestReferenceMap2D(object):
         # evaluating ref map 1st derivative to edges should give vectors
         # that point in direction of each edge,
         # i.e. `basis vector` for each edge
-        dRM = self.ref_map.eval(points=verts_1d, d=1)
+        dRM = self.ref_map.eval(points=verts_1d, deriv=1)
 
         nE = self.mesh.edges.shape[0]
         nD = self.mesh.dimension
@@ -100,7 +100,7 @@ class TestReferenceMap2D(object):
         assert np.allclose(dRM[...,0], np.tile(E[:,None], (nP,1)))
 
     def test_jacobian_inverse_cells(self):
-        jacs = self.ref_map.eval(points=verts_2d, d=1)
+        jacs = self.ref_map.eval(points=verts_2d, deriv=1)
         jacs_inv = self.ref_map.jacobian_inverse(points=verts_2d)
 
         eyes = (jacs[:,:,:,:,None] * jacs_inv[:,:,None,:,:]).sum(axis=-2)

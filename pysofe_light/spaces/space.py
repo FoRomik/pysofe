@@ -73,7 +73,7 @@ class FESpace(DOFManager):
 
         return points, weights
 
-    def eval_global_derivatives(self, points, d=1):
+    def eval_global_derivatives(self, points, deriv=1):
         """
         Evaluates the global basis functions' derivatives at given local points.
 
@@ -83,7 +83,7 @@ class FESpace(DOFManager):
         points : array_like
             The local points on the reference element
 
-        d : int
+        deriv : int
             The derivation order
 
         Returns
@@ -95,8 +95,9 @@ class FESpace(DOFManager):
             each point (nP)
         """
 
-        if not d in (1, 2):
-            raise ValueError('Invalid derivation order for global derivatives! ({})'.format(d))
+        if not deriv in (1, 2):
+            msg = "Invalid derivation order for global derivatives! ({})"
+            raise ValueError(msg.format(deriv))
         
         # evaluate inverse jacobians of the reference maps for each element
         # and given point
@@ -105,15 +106,15 @@ class FESpace(DOFManager):
         
         # get derivatives of the local basis functions at given points
         # --> nB x nP x nD [x nD]
-        local_derivatives = self.element.eval_basis(points, d=d)
+        local_derivatives = self.element.eval_basis(points, deriv)
 
         # now we decompose the matrix vector product of the inverse jacobian
         # with the local derivatives into an elementwise multiplication and
         # summation along an axis
         # therefore we have to expand some dimensions for the multiplication part
-        if d == 1:
+        if deriv == 1:
             derivatives = (inv_jac[:,None,:,:,:] * local_derivatives[None,:,:,:,None]).sum(axis=-2)    # nE x nB x nP x nD
-        elif d == 2:
+        elif deriv == 2:
             derivatives = (inv_jac.swapaxes(-2,-1)[:,None,:,:,:,None] * local_derivatives[None,:,:,None,:,:]).sum(axis=-2)
             derivatives = (derivatives[:,:,:,:,:,None] * inv_jac[:,None,:,None,:,:]).sum(axis=-2)
 
