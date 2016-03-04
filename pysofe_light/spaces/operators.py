@@ -209,7 +209,7 @@ class Laplacian(Operator):
     Represents the operator
     
     .. math::
-       \\int_{\\Omega} a \\nable u \\cdot \\nable v
+       \\int_{\\Omega} a \\nabla u \\cdot \\nabla v
 
     where :math:`u,v \\in V` and :math:`a \\in L^{2}`.
 
@@ -224,7 +224,7 @@ class Laplacian(Operator):
     """
 
     def __init__(self, fe_space, a=1):
-        Operator.__init__(self, fe_space):
+        Operator.__init__(self, fe_space)
         self.a = a
 
     def _compute_entries(self, codim=0):
