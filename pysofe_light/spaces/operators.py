@@ -133,12 +133,10 @@ class MassMatrix(Operator):
         dim = self.fe_space.mesh.dimension - codim
         
         # first, we need the quadrature points and weights
-        # for numerical integration
-        qpoints, qweights = self.fe_space._get_quadrature_data(d=dim)
-
-        # then, we need the jacobian determinants of the reference maps
-        # resulting from integral transformation to the referende domain
-        jac_dets = self.fe_space.mesh.ref_map.jacobian_determinant(qpoints)
+        # for numerical integration and the jacobian determinants
+        # of the reference maps resulting from integral transformation
+        # to the referende domain
+        qpoints, qweights, jac_dets = self.fe_space.get_quadrature_data(d=dim)
 
         # next, we evaluate the function factor
         C = self.fe_space.mesh.eval_function(fnc=self.c, points=qpoints)
@@ -182,12 +180,10 @@ class L2Product(Operator):
         dim = self.fe_space.mesh.dimension - codim
         
         # first, we need the quadrature points and weights
-        # for numerical integration
-        qpoints, qweights = self.fe_space._get_quadrature_data(d=dim)
-
-        # then, we need the jacobian determinants of the reference maps
-        # resulting from integral transformation to the referende domain
-        jac_dets = self.fe_space.mesh.ref_map.jacobian_determinant(qpoints)
+        # for numerical integration and the jacobian determinants
+        # of the reference maps resulting from integral transformation
+        # to the referende domain
+        qpoints, qweights, jac_dets = self.fe_space.get_quadrature_data(d=dim)
 
         # next, we evaluate the function factor
         F = self.fe_space.mesh.eval_function(fnc=self.f, points=qpoints)
@@ -231,12 +227,10 @@ class Laplacian(Operator):
         dim = self.fe_space.mesh.dimension - codim
         
         # first, we need the quadrature points and weights
-        # for numerical integration
-        qpoints, qweights = self.fe_space._get_quadrature_data(d=dim)
-
-        # then, we need the jacobian determinants of the reference maps
-        # resulting from integral transformation to the referende domain
-        jac_dets = self.fe_space.mesh.ref_map.jacobian_determinant(qpoints)
+        # for numerical integration and the jacobian determinants
+        # of the reference maps resulting from integral transformation
+        # to the referende domain
+        qpoints, qweights, jac_dets = self.fe_space.get_quadrature_data(d=dim)
 
         # next, we evaluate the function factor
         A = self.fe_space.mesh.eval_function(fnc=self.a, points=qpoints)

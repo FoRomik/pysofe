@@ -34,44 +34,31 @@ class FESpace(DOFManager):
         DOFManager.__init__(self, mesh, element)
         
         # get quadrature rule
-        self.quad_rules = self._get_quadrature_rules()
+        self.quad_rule = quadrature.GaussQuadSimp(order=2*element.order,
+                                                  dimension=element.dimension)
 
-    def _get_quadrature_rules(self):
-        """
-        Returns the quadrature rules for the entities up to the dimension
-        of the reference element.
-        """
-
-        order = 2 * self.element.order
-        dim = self.element.dimension
-        
-        qr = [None] * (dim + 1)
-        qr[0] = quadrature.GaussPoint()
-        qr[1] = quadrature.GaussInterval(order)
-        if dim > 1:
-            qr[2] = quadrature.GaussTriangle(order)
-            if dim > 2:
-                qr[3] = quadrature.GaussTetrahedron(order)
-
-        return qr
-
-    def _get_quadrature_data(self, d):
+    def get_quadrature_data(self, d):
         """
         Returns the quadrature points and weighths associated with
-        the `d`-dimensional entities.
+        the `d`-dimensional entities as well as the jacobian determinants
+        of for integral transformation to the reference domain.
 
         Parameters
         ----------
 
         d : int
             The topological dimension of the entities for which to
-            return the quadrature points and weights
+            return the quadrature data
         """
 
-        points = self.quad_rules[d].points
-        weights = self.quad_rules[d].weights
+        # first the quadrature points and weights
+        points = self.quad_rules.points[d]
+        weights = self.quad_rules.weights[d]
 
-        return points, weights
+        # then the determinants of the reference maps jacobians
+        jac_dets = self.mesh.ref_map.jacobian_determinant(points=qpoints)
+
+        return points, weights, jac_dets
 
     def eval_global_derivatives(self, points, deriv=1):
         """

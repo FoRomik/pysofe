@@ -5,4 +5,6 @@ The purpose of these data structures is to give access
 to the quadrature points and weights for several spatial domains.
 """
 
-from .simplicial import GaussPoint, GaussInterval, GaussTriangle, GaussTetrahedron
+import gaussian
+
+from .gaussian import GaussQuadSimp
