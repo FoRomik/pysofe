@@ -3,6 +3,7 @@ Provides the base class for all quadrature rules.
 """
 
 import numpy as np
+import copy
 
 class QuadRule(object):
     """
@@ -15,24 +16,32 @@ class QuadRule(object):
         The polynomial order up to which the quadrature should be exact
     """
 
-    def __init__(self, order):
-        self.order = order
-        self._points = None
-        self._weights = None
+    def __init__(self, order, dimension):
+        self._order = order
+        self._dimension = dimension
+        self._points = [None] * dimension
+        self._weights = [None] * dimension
 
-        self.set_data()
+        self._set_data()
 
-    def set_data(self):
+    def _set_data(self):
         """
-        Set the quadrature points and weights.
+        Sets the quadrature points and weights.
         """
         raise NotImplementedError()
 
     @property
+    def order(self):
+        return self._order
+
+    @property
+    def dimension(self):
+        return self._dimension
+    
+    @property
     def points(self):
-        return self._points.copy()
+        return copy.deepcopy(self._points)
 
     @property
     def weights(self):
-        return self._weights.copy()
-
+        return copy.deepcopy(self._weights)
