@@ -19,8 +19,8 @@ class QuadRule(object):
     def __init__(self, order, dimension):
         self._order = order
         self._dimension = dimension
-        self._points = [None] * dimension
-        self._weights = [None] * dimension
+        self._points = [None] * (dimension + 1)
+        self._weights = [None] * (dimension + 1)
 
         self._set_data()
 

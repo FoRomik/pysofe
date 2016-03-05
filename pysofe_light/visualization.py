@@ -35,6 +35,9 @@ def show(obj, *args, **kwargs):
     elif isinstance(obj, pysofe.meshes.mesh.Mesh):
         V = MeshVisualizer()
         V.show(obj, *args, **kwargs)
+    elif isinstance(obj, pysofe.quadrature.gaussian.GaussQuadSimp):
+        V = QuadRuleVisualizer()
+        V.show(obj, *args, **kwargs)
 #    elif isinstance(obj, (pysofe.spaces.functions.FEFunction,
 #                          pysofe.spaces.functions.MeshFunction)):
 #        V = FunctionVisualizer()
@@ -491,3 +494,61 @@ class FunctionVisualizer(Visualizer):
                         # don't show axis
                         axes[i,j].set_axis_off()
 
+class QuadRuleVisualizer(Visualizer):
+    """
+    Visualizes the numerical integration scheme by plotting the
+    quadrature points.
+    """
+
+    def _plot(self, quad_rule, *args, **kwargs):
+        assert isinstance(quad_rule, pysofe.quadrature.gaussian.GaussQuadSimp)
+        
+        # get entity dimension for which to plot points
+        dim = kwargs.get('d', quad_rule.dimension)
+
+        if not dim in (1, 2):
+            msg = "Visualization not supported for this dimension, yet ({})"
+            raise ValueError(msg.format(dim))
+        
+        # get quadrature points
+        points = quad_rule.points[dim]
+        
+        # check if mesh is given
+        mesh = kwargs.get('mesh', None)
+
+        if mesh is not None and isinstance(mesh, pysofe.meshes.mesh.Mesh):
+            # is so, plot points on whole mesh
+            V = MeshVisualizer()
+            fig, axes = V.plot(mesh)
+
+            # transfer local points to global ponts on the mesh
+            points = np.vstack(mesh.ref_map.eval(points)).T
+
+            axes.plot(points[0], points[1], 'r.')
+            
+        else:
+            # if not, plot points on reference domain
+            # set up figure and axes
+            fig = plt.figure()
+            axes = fig.add_subplot(111)
+
+            if dim == 1:
+                nodes = np.array([[0.], [1.]])
+                cells = np.array([[1, 2]])
+                axes.plot(nodes[:,0], np.zeros_like(nodes[:,0]))
+                axes.plot(points[0], np.zeros_like(points[0]), 'r.')
+            elif dim == 2:
+                nodes = np.array([[0., 0.], [1., 0.], [0., 1.]])
+                cells = np.array([[1, 2, 3]])
+                axes.triplot(nodes[:,0], nodes[:,1], cells-1)
+                axes.plot(points[0], points[1], 'r.')
+
+            # zoom out to make outer faces visible
+            xlim = list(axes.get_xlim()); ylim = list(axes.get_ylim())
+            xlim[0] -= 0.1; xlim[1] += 0.1
+            ylim[0] -= 0.1; ylim[1] += 0.1
+            axes.set_xlim(xlim)
+            axes.set_ylim(ylim)
+
+
+        return fig, axes

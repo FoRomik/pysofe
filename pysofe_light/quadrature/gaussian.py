@@ -55,7 +55,7 @@ class GaussQuadSimp(QuadRule):
             
             points_weights = np.asarray(dunavant_points_weights[self.order-1])
 
-            points = points_weights.take((0,1), axis=1)
+            points = points_weights.take((0,1), axis=1).T
             weights = points_weights.take(2, axis=1)
 
             # weights are normalized to the triangle area
