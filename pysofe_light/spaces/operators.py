@@ -258,14 +258,16 @@ class Laplacian(Operator):
         
         if (A.ndim - 2) == 0:
             # assuming `a` to be scalar
+            assert A.shape[-1] == 1
             values = (dbasis[:,None,:,:,:] * dbasis[:,:,None,:,:]).sum(axis=-1)
-            values *= A[:,None,None,:]
+            values *= A[:,None,None,:,0]
         elif (A.ndim - 2) == 2:
             # assuming `a` to be matrix
             Adbasis = (A[:,None,:,:,:] * dbasis[:,:,:,None,:]).sum(axis=-1)
             values = (Adbasis[:,None,:,:,:] * dbasis[:,:,None,:,:]).sum(axis=-1)
         else:
             raise ValueError("Invalid shape of function factor ({})".format(A.shape))
+
         jac_dets = jac_dets[:,None,None,:]
         qweights = qweights[None,None,None,:]
 

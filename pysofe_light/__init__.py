@@ -13,6 +13,7 @@ import elements
 import meshes
 import quadrature
 import spaces
+import pde
 import utils
 import visualization
 
