@@ -46,9 +46,11 @@ class Operator(object):
         """
 
         # first compute the operator specific entries
+        # --> nE x nB x (nB|1)
         entries = self._compute_entries(codim=codim)
 
         # get the dof map for the desired entities
+        # --> nB x nE
         dim = self.fe_space.mesh.dimension - codim
         dof_map = self.fe_space.get_dof_map(d=dim, mask=mask)
         n_dof = self.fe_space.n_dof
@@ -67,7 +69,7 @@ class Operator(object):
             row_ind = dof_map.ravel(order='F')
             col_ind = np.ones_like(row_ind)
             shape = (n_dof, 1)
-        elif np.size(entries, axis=2) == 2:
+        else:
             nB = np.size(entries, axis=1)
             row_ind = np.tile(dof_map, reps=(nB, 1)).ravel(order='F')
             col_ind = np.repeat(dof_map, repeats=nB, axis=0).ravel(order='F')
@@ -141,6 +143,11 @@ class MassMatrix(Operator):
         # next, we evaluate the function factor
         C = self.fe_space.mesh.eval_function(fnc=self.c, points=qpoints)
 
+        # consistency check
+        nE = jac_dets.shape[0]
+        nP = qpoints.shape[1]
+        assert C.shape == (nE, nP)
+        
         # now, compute the entries
         basis = self.fe_space.element.eval_basis(points=qpoints, deriv=0)
         values = basis[None,None,:,:] * basis[None,:,None,:]
@@ -187,6 +194,11 @@ class L2Product(Operator):
 
         # next, we evaluate the function factor
         F = self.fe_space.mesh.eval_function(fnc=self.f, points=qpoints)
+
+        # consistency check
+        nE = jac_dets.shape[0]
+        nP = qpoints.shape[1]
+        assert F.shape == (nE, nP)
 
         # now, compute the entries
         basis = self.fe_space.element.eval_basis(points=qpoints, deriv=0)
@@ -238,6 +250,12 @@ class Laplacian(Operator):
         # now, compute the entries
         dbasis = self.fe_space.eval_global_derivatives(points=qpoints, deriv=1)
 
+        # consistency check
+        nE = jac_dets.shape[0]
+        nP = qpoints.shape[1]
+        nD = self.fe_space.mesh.dimension
+        assert A.shape in {(nE, nP), (nE, nP, nD, nD)}
+        
         if (A.ndim - 2) == 0:
             # assuming `a` to be scalar
             values = (dbasis[:,None,:,:,:] * dbasis[:,:,None,:,:]).sum(axis=-1)
@@ -246,7 +264,8 @@ class Laplacian(Operator):
             # assuming `a` to be matrix
             Adbasis = (A[:,None,:,:,:] * dbasis[:,:,:,None,:]).sum(axis=-1)
             values = (Adbasis[:,None,:,:,:] * dbasis[:,:,None,:,:]).sum(axis=-1)
-
+        else:
+            raise ValueError("Invalid shape of function factor ({})".format(A.shape))
         jac_dets = jac_dets[:,None,None,:]
         qweights = qweights[None,None,None,:]
 

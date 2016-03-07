@@ -52,13 +52,16 @@ class FESpace(DOFManager):
         """
 
         # first the quadrature points and weights
-        points = self.quad_rules.points[d]
-        weights = self.quad_rules.weights[d]
+        qpoints = self.quad_rule.points[d]
+        qweights = self.quad_rule.weights[d]
 
         # then the determinants of the reference maps jacobians
         jac_dets = self.mesh.ref_map.jacobian_determinant(points=qpoints)
 
-        return points, weights, jac_dets
+        # but we need the absolute value for integral transformation
+        jac_dets = np.abs(jac_dets)
+
+        return qpoints, qweights, jac_dets
 
     def eval_global_derivatives(self, points, deriv=1):
         """
