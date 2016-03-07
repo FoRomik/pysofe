@@ -126,14 +126,14 @@ class TestMesh2D(object):
         nP = local_points_2d.shape[1]
 
         assert np.allclose(values,
-                           global_points_2d.prod(axis=0).reshape((nE, nP, 1)))
+                           global_points_2d.prod(axis=0).reshape((nE, nP)))
 
     def test_eval_function_constant_scalar(self):
         values = self.mesh.eval_function(c0, local_points_2d)
         nE = self.mesh.cells.shape[0]
         nP = local_points_2d.shape[1]
         
-        assert np.allclose(values, np.ones((nE, nP, 1)))
+        assert np.allclose(values, np.ones((nE, nP)))
 
     def test_eval_function_constant_vector(self):
         values = self.mesh.eval_function(c1, local_points_2d)

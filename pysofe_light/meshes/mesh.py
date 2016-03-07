@@ -166,6 +166,12 @@ class Mesh(object):
 
         points : array_like
             The local points on the reference domain
+        
+        Returns
+        -------
+
+        numpy.ndarray
+            nE x nP [x nD [x nD]]
         """
 
         # first we need the global counterparts to the given local points
@@ -189,7 +195,7 @@ class Mesh(object):
 
             # we are assuming it is a scalar function
             # TODO: add test or get rid of this restriction?
-            values = values.reshape((nE, nP, -1))
+            values = values.reshape((nE, nP))
 
         else:
             values = np.zeros((nE, nP))
@@ -197,13 +203,12 @@ class Mesh(object):
             if np.isscalar(fnc):
                 # if the given function is somehow constant
                 # return a broadcasted version that matches the
-                # return shape nE x nP x 1
-                _, values = np.broadcast_arrays(values[:,:,None],
+                # return shape nE x nP
+                _, values = np.broadcast_arrays(values[:,:],
                                                 np.asarray(fnc))
             elif isinstance(fnc, (np.ndarray, list, tuple)):
                 # if it is an array like object (assuming vector or matrix)
                 # also broadcast it
-
                 if not isinstance(fnc, np.ndarray):
                     fnc = np.asarray(fnc)
                 
