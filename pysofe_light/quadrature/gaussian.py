@@ -79,9 +79,24 @@ class GaussQuadSimp(QuadRule):
             # self._weights[2] = (W * (1 - P[1]))
 
         if self.dimension >= 3:
-            # 3-dimensional points and weights are not yet implemented
-            raise NotImplementedError()
+            # 3-dimensional points and weights are not yet supported
+            # for orders higher than 2
+            if self.order == 1:
+                self._points[3] = np.array([[0.25],
+                                            [0.25],
+                                            [0.25]])
+                self._weights[3] = np.array([1/6.])
+            elif self.order == 2:
+                a1 = 0.138196601150000
+                a2 = 0.585410196600000
 
+                self._points[3] = np.array([[a1, a2, a1, a1],
+                                            [a1, a1, a2, a1],
+                                            [a1, a1, a1, a2]])
+                self._weights[3] = 1/24. * np.array([1., 1., 1., 1.])
+            else:
+                msg = "Quadrature points and weights on tetrahedron not supported for order {} (>2)!"
+                raise NotImplementedError(msg.format(self.order))
 
 #--------------------------------------
 # TABLE OF DUNAVANT'S QUADRATURE RULES

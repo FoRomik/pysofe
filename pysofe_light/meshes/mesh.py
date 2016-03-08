@@ -228,4 +228,5 @@ class Mesh(object):
             else:
                 raise TypeError("Invalid function type!")
 
-        return values
+        return values            # nE x nP x nD
+        # return np.vstack(values) # (nE*nP) x nD

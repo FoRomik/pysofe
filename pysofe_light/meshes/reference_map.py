@@ -58,6 +58,11 @@ class ReferenceMap(object):
             nE x nP x nD [x nD]
         """
 
+        if points.size == 0:
+            # in 1D special case return node coordinates
+            # --> nE x (nP) x nD
+            return self._mesh.nodes[:,None,:]
+        
         points = np.atleast_2d(points)
 
         # determine topological dimension of the mesh entities
@@ -119,10 +124,10 @@ class ReferenceMap(object):
         # evaluate 1st derivative of every reference map
         jacs = self.eval(points=points, deriv=1)
 
-        if jacs.shape[2] == 1:
-            jacs_inv = 1./jacs
-        elif jacs.shape[2] == 2:
+        if jacs.shape[-2:] in {(1,1), (2,2), (3,3)}:
             jacs_inv = np.linalg.inv(jacs)
+        elif jacs.shape[-1] == 1:
+            jacs_inv = 1./jacs
         else:
             raise NotImplementedError("Jacobian inverse not available yet!")
 
@@ -140,14 +145,27 @@ class ReferenceMap(object):
             The local points at which to compute the determinants
         """
 
+        # first we need the jacobians of the reference maps
+        # --> nE x nP x nD x nD
         jacs = self.eval(points=points, deriv=1)
 
-        if jacs.shape[2] == 1:
-            jacs_det = np.sqrt(np.power(jacs[...,0], 2).sum(axis=2))
-        elif jacs.shape[2] == 2:
+        if jacs.shape[-2:] in {(1,1), (2,2), (3,3)}:
             jacs_det = np.linalg.det(jacs)
+        elif jacs.shape[-2:] == (2,1):
+            jacs_det = np.sqrt(np.power(jacs[...,0], 2).sum(axis=2))
+        elif jacs.shape[-2:] == (3,2):
+            tmp0 = np.power(jacs[...,1,0] * jacs[...,2,1]
+                            - jacs[...,2,0] * jacs[...,1,1], 2)
+            tmp1 = np.power(jacs[...,2,0] * jacs[...,0,1]
+                            - jacs[...,0,0] * jacs[...,2,1], 2)
+            tmp2 = np.power(jacs[...,0,0] * jacs[...,1,1]
+                            - jacs[...,1,0] * jacs[...,0,1], 2)
+            
+            jacs_det = np.sqrt(tmp0 + tmp1 + tmp2)
         else:
-            raise NotImplementedError("Jacobian determinant not available yet!")
+            msg = "Unsupported shape of jacobians! ({})"
+            raise NotImplementedError(msg.format(jacs.shape))
+            #raise NotImplementedError("Jacobian determinant not available yet!")
 
         return jacs_det
         
