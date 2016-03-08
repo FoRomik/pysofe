@@ -124,10 +124,10 @@ class ReferenceMap(object):
         # evaluate 1st derivative of every reference map
         jacs = self.eval(points=points, deriv=1)
 
-        if jacs.shape[2] == 1:
-            jacs_inv = 1./jacs
-        elif jacs.shape[2] == 2:
+        if jacs.shape[-2:] in {(1,1), (2,2), (3,3)}:
             jacs_inv = np.linalg.inv(jacs)
+        elif jacs.shape[-1] == 1:
+            jacs_inv = 1./jacs
         else:
             raise NotImplementedError("Jacobian inverse not available yet!")
 
@@ -149,10 +149,10 @@ class ReferenceMap(object):
         # --> nE x nP x nD x nD
         jacs = self.eval(points=points, deriv=1)
 
-        if jacs.shape[-1] == 1:
-            jacs_det = np.sqrt(np.power(jacs[...,0], 2).sum(axis=2))
-        elif jacs.shape[-1] == 2:
+        if jacs.shape[-2:] in {(1,1), (2,2), (3,3)}:
             jacs_det = np.linalg.det(jacs)
+        elif jacs.shape[-1] == 1:
+            jacs_det = np.sqrt(np.power(jacs[...,0], 2).sum(axis=2))
         else:
             msg = "Unsupported shape of jacobians! ({})"
             raise NotImplementedError(msg.format(jacs.shape))
