@@ -23,7 +23,7 @@ class TestLagrangeP1(object):
         assert self.elem.n_verts == (2, 3, 4)
         assert self.elem.order == 1
         assert self.elem.n_basis == (2, 3, 4)
-        assert self.elem.dof_tuple == (1, 0, 0)
+        assert self.elem.dof_tuple == (1, 0, 0, 0)
 
     def test_eval_d0basis(self):
         nerr = 0
