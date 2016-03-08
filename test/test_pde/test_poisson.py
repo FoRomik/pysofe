@@ -59,3 +59,33 @@ class TestPoisson2D(object):
         sol = self.pde.solve()
 
         assert np.allclose(sol, np.ones(self.pde.fe_space.n_dof))
+
+# 3D case
+nodes_3d = np.array([[0.,0.,0.],[1.,0.,0.],[0.,1.,0.],[1.,1.,0.],
+                     [0.,0.,1.],[1.,0.,1.],[0.,1.,1.],[1.,1.,1.]])
+cells_3d = np.array([[1, 2, 3, 5], [2, 3, 5, 6], [3, 5, 6, 7],
+                     [2, 3, 4, 6], [3, 4, 6, 7], [4, 6, 7, 8]])
+mesh_3d = pysofe.meshes.mesh.Mesh(nodes_3d, cells_3d)
+#mesh_3d.refine(method='uniform', times=2)
+
+element_3d = pysofe.elements.simple.lagrange.P1(dimension=3)
+
+fes_3d = pysofe.spaces.space.FESpace(mesh_3d, element_3d)
+
+class TestPoisson3D(object):
+    def dir_domain(x):
+        dir0 = np.logical_or(x[0] == 0., x[0] == 1.)
+        dir1 = np.logical_or(x[1] == 0., x[1] == 1.)
+        dir2 = np.logical_or(x[2] == 0., x[2] == 1.)
+        return np.logical_or(dir0, np.logical_or(dir1, dir2))
+
+    dir_bc = pysofe.pde.conditions.DirichletBC(fe_space=fes_3d,
+                                               domain=dir_domain,
+                                               ud=1.)
+
+    pde = pysofe.pde.poisson.Poisson(fe_space=fes_3d, a=1., f=0., bc=dir_bc)
+
+    def test_solution(self):
+        sol = self.pde.solve()
+
+        assert np.allclose(sol, np.ones(self.pde.fe_space.n_dof))

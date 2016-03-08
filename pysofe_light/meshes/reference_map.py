@@ -151,8 +151,17 @@ class ReferenceMap(object):
 
         if jacs.shape[-2:] in {(1,1), (2,2), (3,3)}:
             jacs_det = np.linalg.det(jacs)
-        elif jacs.shape[-1] == 1:
+        elif jacs.shape[-2:] == (2,1):
             jacs_det = np.sqrt(np.power(jacs[...,0], 2).sum(axis=2))
+        elif jacs.shape[-2:] == (3,2):
+            tmp0 = np.power(jacs[...,1,0] * jacs[...,2,1]
+                            - jacs[...,2,0] * jacs[...,1,1], 2)
+            tmp1 = np.power(jacs[...,2,0] * jacs[...,0,1]
+                            - jacs[...,0,0] * jacs[...,2,1], 2)
+            tmp2 = np.power(jacs[...,0,0] * jacs[...,1,1]
+                            - jacs[...,1,0] * jacs[...,0,1], 2)
+            
+            jacs_det = np.sqrt(tmp0 + tmp1 + tmp2)
         else:
             msg = "Unsupported shape of jacobians! ({})"
             raise NotImplementedError(msg.format(jacs.shape))
