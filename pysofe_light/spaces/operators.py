@@ -46,7 +46,7 @@ class Operator(object):
         """
 
         # first compute the operator specific entries
-        # --> nE x nB x (nB|1)
+        # --> nE x nB [x nB]
         entries = self._compute_entries(codim=codim)
 
         # get the dof map for the desired entities
@@ -64,12 +64,12 @@ class Operator(object):
             dof_map = dof_map.compress(mask, axis=1)
 
         # get row and column indices for coo matrix
-        # depending on whether to assemble matrix or vector
-        if np.size(entries, axis=2) == 1:
+        # depending on whether to assemble vector or matrix
+        if entries.ndim == 2:
             row_ind = dof_map.ravel(order='F')
             col_ind = np.ones_like(row_ind)
             shape = (n_dof, 1)
-        else:
+        elif entries.ndim == 3:
             nB = np.size(entries, axis=1)
             row_ind = np.tile(dof_map, reps=(nB, 1)).ravel(order='F')
             col_ind = np.repeat(dof_map, repeats=nB, axis=0).ravel(order='F')
@@ -143,14 +143,22 @@ class MassMatrix(Operator):
         # next, we evaluate the function factor
         C = self.fe_space.mesh.eval_function(fnc=self.c, points=qpoints)
 
-        # consistency check
+        # for consistency check
         nE = jac_dets.shape[0]
-        nP = qpoints.shape[1]
-        assert C.shape == (nE, nP)
-        
-        # now, compute the entries
-        basis = self.fe_space.element.eval_basis(points=qpoints, deriv=0)
-        values = basis[None,None,:,:] * basis[None,:,None,:]
+
+        if qpoints.size > 0:
+            nP = qpoints.shape[1]
+            assert C.shape == (nE, nP)
+
+            basis = self.fe_space.element.eval_basis(points=qpoints, deriv=0)
+            values = basis[None,None,:,:] * basis[None,:,None,:]
+        else:
+            # 1D special case
+            assert C.shape == (nE, 1)
+            
+            #nB = self.fe_space.element.n_basis[0]
+            nB = 1
+            values = np.ones((nB, nB, 1))[None,:,:,:]
 
         jac_dets = jac_dets[:,None,None,:]
         qweights = qweights[None,None,None,:]
@@ -195,18 +203,27 @@ class L2Product(Operator):
         # next, we evaluate the function factor
         F = self.fe_space.mesh.eval_function(fnc=self.f, points=qpoints)
 
-        # consistency check
+        # for consistency check
         nE = jac_dets.shape[0]
-        nP = qpoints.shape[1]
-        assert F.shape == (nE, nP)
+
+        if qpoints.size > 0:
+            nP = qpoints.shape[1]
+            assert F.shape == (nE, nP)
+
+            basis = self.fe_space.element.eval_basis(points=qpoints, deriv=0)
+            values = basis[None,:,:]
+        else:
+            # 1D special case
+            assert F.shape == (nE, 1)
+            
+            #nB = self.fe_space.element.n_basis[0]
+            nB = 1
+            values = np.ones((nB, 1))[None,:,:]
 
         # now, compute the entries
-        basis = self.fe_space.element.eval_basis(points=qpoints, deriv=0)
-        values = basis[None,:,None,:]
-
-        jac_dets = jac_dets[:,None,None,:]
-        qweights = qweights[None,None,None,:]
-        F = F[:,None,None,:]
+        jac_dets = jac_dets[:,None,:]
+        qweights = qweights[None,None,:]
+        F = F[:,None,:]
 
         entries = (F * values * jac_dets * qweights).sum(axis=-1)
 

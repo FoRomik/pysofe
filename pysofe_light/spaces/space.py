@@ -55,11 +55,17 @@ class FESpace(DOFManager):
         qpoints = self.quad_rule.points[d]
         qweights = self.quad_rule.weights[d]
 
-        # then the determinants of the reference maps jacobians
-        jac_dets = self.mesh.ref_map.jacobian_determinant(points=qpoints)
-
-        # but we need the absolute value for integral transformation
-        jac_dets = np.abs(jac_dets)
+        if qpoints.size > 0:
+            # then the determinants of the reference maps jacobians
+            jac_dets = self.mesh.ref_map.jacobian_determinant(points=qpoints)
+            
+            # but we need the absolute value for integral transformation
+            jac_dets = np.abs(jac_dets)
+        else:
+            # 1d special case
+            nE = self.mesh.topology.n_entities[d]
+            #jac_dets = np.ndarray(shape=(nE, 0))
+            jac_dets = np.ones((nE, 1))
 
         return qpoints, qweights, jac_dets
 

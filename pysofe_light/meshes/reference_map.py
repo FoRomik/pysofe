@@ -58,6 +58,11 @@ class ReferenceMap(object):
             nE x nP x nD [x nD]
         """
 
+        if points.size == 0:
+            # in 1D special case return node coordinates
+            # --> nE x (nP) x nD
+            return self._mesh.nodes[:,None,:]
+        
         points = np.atleast_2d(points)
 
         # determine topological dimension of the mesh entities
@@ -149,7 +154,9 @@ class ReferenceMap(object):
         elif jacs.shape[-1] == 2:
             jacs_det = np.linalg.det(jacs)
         else:
-            raise NotImplementedError("Jacobian determinant not available yet!")
+            msg = "Unsupported shape of jacobians! ({})"
+            raise NotImplementedError(msg.format(jacs.shape))
+            #raise NotImplementedError("Jacobian determinant not available yet!")
 
         return jacs_det
         
