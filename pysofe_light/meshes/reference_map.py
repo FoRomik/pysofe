@@ -140,11 +140,13 @@ class ReferenceMap(object):
             The local points at which to compute the determinants
         """
 
+        # first we need the jacobians of the reference maps
+        # --> nE x nP x nD x nD
         jacs = self.eval(points=points, deriv=1)
 
-        if jacs.shape[2] == 1:
+        if jacs.shape[-1] == 1:
             jacs_det = np.sqrt(np.power(jacs[...,0], 2).sum(axis=2))
-        elif jacs.shape[2] == 2:
+        elif jacs.shape[-1] == 2:
             jacs_det = np.linalg.det(jacs)
         else:
             raise NotImplementedError("Jacobian determinant not available yet!")
