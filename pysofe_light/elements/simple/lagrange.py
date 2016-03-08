@@ -27,7 +27,7 @@ class P1(Element):
         
         Element.__init__(self, dimension, order, n_basis, n_verts)
 
-        self._dof_tuple = (1, 0, 0)
+        self._dof_tuple = (1, 0, 0, 0)[:(dimension+1)]
 
     def _eval_d0basis(self, points):
         # determine number of points and their dimension
