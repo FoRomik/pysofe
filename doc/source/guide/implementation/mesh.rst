@@ -16,14 +16,16 @@ Furthermore, it stores a family of *reference maps*, implemented in
 the |ReferenceMap| class, that connect the physical mesh entities to
 a reference domain.
 
+.. contents:: Contents
+
 The Mesh Geometry
------------------
++++++++++++++++++
 
 The |MeshGeometry| class provides geometrical information about the mesh
 which currently amounts in storing the spatial coordinate of the mesh nodes.
 
 The Mesh Topology
------------------
++++++++++++++++++
 
 The |MeshTopology| class provides topological information about the mesh, i.e.
 it gives access to its entities such as edges, faces or cells and neighborly
@@ -58,7 +60,6 @@ would be stored in a matrix
 
 .. math::
    :nowrap:
-   :label: sample-mesh
       
    I_{2,0} = \begin{pmatrix}
                1 & 1 & 1 & 0 \\
@@ -87,9 +88,9 @@ A prerequisite for the algorithms to work is, that we already have the incidence
 matrix for the relation :math:`D \to 0`. This matrix is constructed using the
 following auxiliary intialization method.
 
-First, we need the *conenctivity array* that defines the mesh cells (entities of
-topological dimension :math:`D`) via their node indices. For the sample mesh
-:eq:`sample-mesh` this array would be
+First, we need the *connectivity array* that defines the mesh cells (entities of
+topological dimension :math:`D`) row-wise via their node indices. For the sample
+mesh this array would be
 
 .. math::
    :nowrap:
@@ -128,13 +129,35 @@ For our sample mesh the row index array would be:
 .. math::
    :nowrap:
 
-   rows = \begin{bmatrix} 1 & 1 & 1 & 2 & 2 & 2 & 3 & 3 & 3 & 4 & 4 & 4 \end{bmatrix},
+   rows = \begin{bmatrix} 1 & 1 & 1 & 2 & 2 & 2 \end{bmatrix},
 
 containing each row index :math:`nV = 3` times.
 
 The columns of the incidence matrix we create correspond to the vertices of
-the mesh. So, the column array will contain the indices of the vertices that
-are incident to ...
+the mesh. So, each index in the column array is the column index of the
+non-zero entry corresponding to the respective index in the row array.
+As those non-zero entries represent the incident vertices for each cell
+the column indices are given by the connectivity array that has been passed
+as an argument.
+
+Again, for our sample mesh this column index array would be:
+
+.. math::
+   :nowrap:
+
+   cols = \begin{bmatrix} 1 & 2 & 3 & 2 & 3 & 4 \end{bmatrix}.
+
+As stated before, the remaining *data* array contains the values of the
+non-zero entries in the matrix. For us those values are all equal to :math:`1`,
+so the data array would be
+
+.. math::
+   :nowrap:
+
+   data = \begin{bmatrix} 1 & 1 & 1 & 1 & 1 & 1 \end{bmatrix}.
+
+and we can now create the incidence matrix for the relation :math:`D \to 0` by
+passing the three array to the scipy class for a sparse matrix in COO format.
 
 Build
 -----
@@ -143,3 +166,89 @@ The *build* algorithm computes the incidence relation :math:`d \to 0` for a
 topological dimension :math:`0 < d < D`, i.e. it determines the incident
 vertices for every :math:`d`\ -dimensional mesh entity.
 
+Starting from the incidence relation :math:`D \to 0` that was constructed
+using the initialization method above, we first have to determine the
+*local vertex sets* for every :math:`d`\ -dimensional subentity of the mesh
+cells, i.e. we need for each subentity of topological dimension :math:`d` of
+every mesh cell to vertex indices that define it.
+
+For example, assume we want to build the incidence relation :math:`1 \to 0`,
+i.e. the incident vertices of every edge (topological dimension :math:`d = 1`).
+As every triangular cell is incident to three edges and each edge is defined
+by two vertex indices, the local vertex set for the edges of every cell will
+consist of three 2-tuples of indices.
+
+For our sample mesh the local vertex set for the edges of the first cell
+would be
+
+.. math::
+   :nowrap:
+
+   \begin{bmatrix} (1,2) & (1,3) & (2,3) \end{bmatrix}
+
+because the first edge of the cell is defined by the vertex indices :math:`1` and
+:math:`2`, the second edge is defined by the indices :math:`1,3` and the third
+edge by the indices :math:`2,3`. Analogously, the local vertex for the edges
+of the second cell would be
+
+.. math::
+   :nowrap:
+
+   \begin{bmatrix} (2,3) & (2,4) & (3,4) \end{bmatrix}.
+
+Obviously, there are duplicates in the local vertex sets because edges will
+be incident to two neighboring triangular cells if they are not part of the
+boundary of the domain. So, the next step is to determine the unique vertex
+tuples in all the local vertex sets. For us this would result in the following
+array, where the tuples are now written as the rows.
+
+.. math::
+   :nowrap:
+
+   \begin{bmatrix}
+     1 & 2 \\
+     1 & 3 \\
+     2 & 3 \\
+     2 & 4 \\
+     3 & 4
+   \end{bmatrix}.
+
+This array is now a connectivity array that defines the edges of our sample
+mesh just like the one we had in the initialization method for the cells.
+That means we can use the same procedure to construct the sparse matrix
+for the incidence relation :math:`d \to 0`.
+
+As there are five edges in the mesh and each edge is incident to two vertices
+the row index array for the edges will contain each index from :math:`1` to
+:math:`5` twice.
+
+.. math::
+   :nowrap:
+
+   rows = \begin{bmatrix} 1 & 1 & 2 & 2 & 3 & 3 & 4 & 4 & 5 & 5 \end{bmatrix}
+
+The column index array just consists of the indices given by the connectivity
+array flattened row-wise
+
+.. math::
+   :nowrap:
+
+   cols = \begin{bmatrix} 1 & 2 & 1 & 3 & 2 & 3 & 2 & 4 & 3 & 4 \end{bmatrix}
+
+and the data array is an array of :math:`1`\ 's with the same length as the
+row and column index arrays.
+
+.. math::
+   :nowrap:
+
+   data = \begin{bmatrix} 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \end{bmatrix}
+
+Transpose
+---------
+
+to be continued...
+
+Intersection
+------------
+
+to be continued...

@@ -318,7 +318,7 @@ class MeshTopology(object):
         data = np.ones(n_entities * n_vertices, dtype=bool)
 
         # the row indices represent the `d` dimensional mesh entities
-        # and as each entity is defined by `n_vertices[d]` vertex indices
+        # and as each entity is defined by `n_vertices` vertex indices
         # we need every row index that many times
         rowind = np.arange(n_entities).repeat(n_vertices)
 
