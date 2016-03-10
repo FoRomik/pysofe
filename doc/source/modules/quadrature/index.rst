@@ -9,5 +9,4 @@
    :maxdepth: 1
 
    base
-   simplicial
-   
+   gaussian   

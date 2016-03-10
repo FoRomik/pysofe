@@ -10,4 +10,7 @@ to be continued...
 
    about
    implementation/index
-   
+
+.. rubric:: References
+
+.. bibliography:: /references.bib

@@ -55,8 +55,8 @@ class MeshTopology(object):
     def _init_incidence(self, cells):
         """
         Computes the incidence relations D -> 0 and 0 -> D 
-        from given connectivity array where D is the topological 
-        of the mesh cells dimension.
+        from given connectivity array where D is the topological
+        dimension of the mesh cells.
 
         Parameters
         ----------

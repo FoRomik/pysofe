@@ -1,0 +1,9 @@
+.. |PySOFE| replace:: Py\ :math:`\mathbb{SOFE}`\
+
+
+
+.. |Mesh| replace:: :py:class:`Mesh <pysofe_light.meshes.mesh.Mesh>`
+.. |MeshGeometry| replace:: :py:class:`MeshGeometry <pysofe_light.meshes.geometry.MeshGeometry>`
+.. |MeshTopology| replace:: :py:class:`MeshTopology <pysofe_light.meshes.topology.MeshTopology>`
+.. |ReferenceMap| replace:: :py:class:`ReferenceMap <pysofe_light.meshes.reference_map.ReferenceMap>`
+
