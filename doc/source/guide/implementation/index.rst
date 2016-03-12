@@ -11,4 +11,4 @@ to be continued...
 .. toctree::
    :maxdepth: 1
 
-   mesh
+   mesh/index

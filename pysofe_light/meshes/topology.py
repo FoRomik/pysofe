@@ -235,20 +235,20 @@ class MeshTopology(object):
             self._compute_connectivity(dd, d)
 
             # and then just transpose
-            self._transpose(d, dd)
+            self._transpose(dd, d)
         else:
             # this should not be the case here
             assert not (d == 0 and dd == 0)
 
             if True:
-                self._intersection(d, dd)
+                self._intersect(d, dd)
             else:
                 # # the computation always works the same way
                 # # first get `d -> 0` and `0 -> dd` and then
                 # # just intersect
                 # self._compute_connectivity(d, 0)
                 # self._compute_connectivity(0, dd)
-                # self._intersection(d, dd, 0)
+                # self._intersect(d, dd, 0)
                 raise RuntimeError("This method of computing intersection is deprecated!")            
         
     def _get_indices(self, d, dd):
@@ -331,7 +331,7 @@ class MeshTopology(object):
 
         self._incidence[d][0] = incidence_d_0.tolil()
 
-    def _transpose(self, d, dd):
+    def _transpose(self, dd, d):
         """
         Computes the incidence relation `d -> dd` from `dd -> d`
         for d < dd.
@@ -356,7 +356,7 @@ class MeshTopology(object):
             msg = 'Incidence ({})->({}) is not available for transposing!'
             raise RuntimeError(msg.format(dd, d))
 
-    def _intersection(self, d, dd, ddd=0):
+    def _intersect(self, d, dd, ddd=0):
         """
         Computes the incidence relation `d -> dd` from `d -> ddd` and `ddd -> dd`
         for d >= dd.
@@ -388,7 +388,7 @@ class MeshTopology(object):
         # of the `dd` dimensional entities (represented by the columns)
         
         if d == dd:
-            # there are two criteria to define when two entities of the
+            # there are two ways to define when two entities of the
             # same topological dimension `d == dd` are incident to each other
             if True:
                 # the first is to define them incident if they share
@@ -419,7 +419,7 @@ class MeshTopology(object):
             # TODO: dissolve this restriction of simplicial case
             incidence_d_dd = (intersection == dd + 1).astype(bool).tolil()
         else:
-            raise RuntimeError("You shouldn't have gotten this far...?!")
+            raise RuntimeError("You shouldn't have gotten to this point...!?")
         
         self._incidence[d][dd] = incidence_d_dd
             

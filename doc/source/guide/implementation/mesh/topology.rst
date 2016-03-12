@@ -1,31 +1,10 @@
 .. include:: /macros.hrst
 
-.. _guide_impl_mesh:
+.. _guide_impl_mesh_topology:
 
-The Mesh
-========
-
-In the finite element environment the purpose of the mesh is to
-discretize and approximate the spatial domain :math:`\Omega` of
-the considered partial differential equation.
-
-In |PySOFE| the mesh is defined by its *geometry* and a *topology*
-implemented in the respective classes |MeshGeometry| and |MeshTopology|.
-This is a concept idea similar to the one presented in :cite:`Logg09`.
-Furthermore, it stores a family of *reference maps*, implemented in
-the |ReferenceMap| class, that connect the physical mesh entities to
-a reference domain.
-
-.. contents:: Contents
-
-The Mesh Geometry
-+++++++++++++++++
-
-The |MeshGeometry| class provides geometrical information about the mesh
-which currently amounts in storing the spatial coordinate of the mesh nodes.
 
 The Mesh Topology
-+++++++++++++++++
+=================
 
 The |MeshTopology| class provides topological information about the mesh, i.e.
 it gives access to its entities such as edges, faces or cells and neighborly
@@ -43,7 +22,7 @@ their incident entities of topological dimension :math:`d'`. The entries
 To explain how to get to these matrices we will consider the following simple
 sample mesh in 2D.
 
-.. tikz:: 
+.. tikz::
    
    \coordinate [label={below left:{\small $1$}}] (1) at (0,0);
    \coordinate [label={below right:{\small $2$}}] (2) at (2,0);
@@ -53,15 +32,20 @@ sample mesh in 2D.
    \draw (3) -- (1) -- (2) -- (3) -- (4) -- (2);
    \draw (0.6,0.6) node[circle, draw, inner sep=1pt, minimum size=0pt] {\small 1};
    \draw (1.4,1.4) node[circle, draw, inner sep=1pt, minimum size=0pt] {\small 2};
+   \draw (1.0,-0.2) node {\tiny\underline{1}};
+   \draw (-0.1,1.0) node {\tiny\underline{2}};
+   \draw (1.2,1.0) node {\tiny\underline{3}};
+   \draw (2.1,1.0) node {\tiny\underline{4}};
+   \draw (1.0,2.2) node {\tiny\underline{5}};
 
-which consists of 4 vertices and 2 triangular cells. For this mesh the incidence
-relation :math:`D \to 0`, i.e. the vertices incident to each cell :math:`(D=2)`,
-would be stored in a matrix
+which consists of 4 vertices, 5 edges and 2 triangular cells. For this mesh
+the incidence relation :math:`D \to 0`, i.e. the vertices incident to each
+cell :math:`(D=2)`, would be stored in a matrix
 
 .. math::
    :nowrap:
       
-   I_{2,0} = \begin{pmatrix}
+   M_{2,0} = \begin{pmatrix}
                1 & 1 & 1 & 0 \\
 	       0 & 1 & 1 & 1
 	     \end{pmatrix}
@@ -81,8 +65,11 @@ Similarly to :cite:`Logg09` the construction of these matrices relies on the
 three algorithms *build*, *transpose* and *intersection*, which will be explained
 in the following sections.
 
+.. contents:: Contents
+   :local:
+
 Initialize
-----------
+++++++++++
 
 A prerequisite for the algorithms to work is, that we already have the incidence
 matrix for the relation :math:`D \to 0`. This matrix is constructed using the
@@ -160,7 +147,7 @@ and we can now create the incidence matrix for the relation :math:`D \to 0` by
 passing the three array to the scipy class for a sparse matrix in COO format.
 
 Build
------
++++++
 
 The *build* algorithm computes the incidence relation :math:`d \to 0` for a
 topological dimension :math:`0 < d < D`, i.e. it determines the incident
@@ -244,11 +231,227 @@ row and column index arrays.
    data = \begin{bmatrix} 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \end{bmatrix}
 
 Transpose
----------
++++++++++
 
-to be continued...
+The *transpose* algorithm computes the incidence relation :math:`d \to d'` for
+:math:`d < d'` from :math:`d' \to d`.
+
+This is the simplest and most straight forward of the algorithms. Assuming
+we already have the incidence matrix :math:`M_{d',d}` for the relation
+:math:`d' \to d` we get the incidence matrix :math:`M_{d,d'}` simply by
+transposing
+
+.. math::
+   :nowrap:
+
+   M_{d,d'} = M_{d',d}^{T}
+
+For example, we already know the incident vertices to every mesh edge
+
+.. math::
+   :nowrap:
+      
+   M_{1,0} = \begin{pmatrix}
+               1 & 1 & 0 & 0 \\
+	       1 & 0 & 1 & 0 \\
+	       0 & 1 & 1 & 0 \\
+	       0 & 1 & 0 & 1 \\
+	       0 & 0 & 1 & 1 
+	     \end{pmatrix}.
+
+If we now want to know the incident edges for every mesh vertex we just
+have to transpose this matrix to get
+
+.. math::
+   :nowrap:
+      
+   M_{1,0}^{T} = M_{0,1} = \begin{pmatrix}
+                             1 & 1 & 0 & 0 & 0 \\
+			     1 & 0 & 1 & 1 & 0 \\
+			     0 & 1 & 1 & 0 & 1 \\
+			     0 & 0 & 0 & 1 & 1 \\
+			   \end{pmatrix}.
+
+where we can see for each of the four mesh vertices the edges that are
+incident to them.
 
 Intersection
-------------
+++++++++++++
 
-to be continued...
+The *intersection* algorithm computes the incidence relation :math:`d \to d'`
+for :math:`d \geq d'` from the two relations :math:`d \to d''` and
+:math:`d'' \to d'`.
+
+The auxiliary topological dimension :math:`d''` is set to :math:`0`, so we
+assume that we already have the incidence matrices :math:`M_{d,0}, M_{0,d'}`
+for the incidence relations :math:`d \to 0` and :math:`0 \to d'`.
+
+Then, the intersection is computed as the dot product of these two matrices.
+The resulting intersection matrix :math:`I_{d,d'}` describes for every
+:math:`d`\ -dimensional mesh entity (represented by the rows) how many
+vertices (:math:`d'' = 0`\ -dimensional entities) it shares with each of
+the mesh entities of topological dimension :math:`d` (represented by the
+columns).
+
+Next, we have to distinguish between two cases to define when the incidence
+relation :math:`d \to d'` holds for two entities.
+
+The case :math:`d = d'`
+.......................
+
+In case :math:`d = d'`, e.g. if we want the neighboring (incident) cells
+for every mesh cell (:math:`2 \to 2`), we define two entities of topological
+dimension :math:`d` incident to each other if they share a
+:math:`d - 1 = \tilde{d}`\ -dimensional mesh entity. So, for two triangles
+(:math:`d = 2`) to be incident they must share an edge (:math:`\tilde{d} = 1`).
+
+Simplicial entities of dimension :math:`d`, i.e. triangles for :math:`d = 2` or
+tetrahedra for :math:`d = 3`, which are the only type of entities that currently
+are supported by |PySOFE|, are defined by :math:`d + 1` vertices.
+So, as the computed intersection matrix :math:`I_{d,d'}` tells us the number
+of vertices shared between each of the :math:`d`\ -dimensional entities and
+every entity of topological dimension :math:`d'` the incidence matrix
+:math:`M_{d,d'}` for :math:`d = d'` is defined by
+
+.. math::
+   :nowrap:
+
+   (M_{d,d})_{ij} = m_{ij} = \begin{cases}
+                                 1 & (I_{d,d})_{ij} = d \\
+                                 0 & \text{else}
+			     \end{cases}
+
+Suppose, we want to know the neighboring edges for every edge of our sample
+mesh, i.e. we are interested in the incidence relation :math:`1 \to 1`.
+The necessary incidence matrices for computing the intersection are
+
+.. math::
+   :nowrap:
+
+   M_{1,0} = \begin{pmatrix}
+                 1 & 1 & 0 & 0 \\
+	         1 & 0 & 1 & 0 \\
+		 0 & 1 & 1 & 0 \\
+		 0 & 1 & 0 & 1 \\
+		 0 & 0 & 1 & 1 
+	     \end{pmatrix}
+   \quad
+   M_{0,1} = \begin{pmatrix}
+                 1 & 1 & 0 & 0 & 0 \\
+		 1 & 0 & 1 & 1 & 0 \\
+		 0 & 1 & 1 & 0 & 1 \\
+		 0 & 0 & 0 & 1 & 1 \\
+	     \end{pmatrix}.
+
+Then the intersection matrix is
+
+.. math::
+   :nowrap:
+
+   M_{1,0} \cdot M_{0,1} = I_{1,1} = \begin{pmatrix}
+                                         2 & 1 & 1 & 1 & 0 \\
+					 1 & 2 & 1 & 0 & 1 \\
+					 1 & 1 & 2 & 1 & 1 \\
+					 1 & 0 & 1 & 2 & 1 \\
+					 0 & 1 & 1 & 1 & 2
+				     \end{pmatrix}
+
+and therefore the resulting incidence matrix would be
+
+.. math::
+   :nowrap:
+
+   M_{1,1} = \begin{pmatrix}
+                 0 & 1 & 1 & 1 & 0 \\
+		 1 & 0 & 1 & 0 & 1 \\
+		 1 & 1 & 0 & 1 & 1 \\
+		 1 & 0 & 1 & 0 & 1 \\
+		 0 & 1 & 1 & 1 & 0
+	     \end{pmatrix}.
+
+A special case is the relation :math:`0 \to 0` for which we define that
+vertices are incident to themselves only. So the incidence matrix
+:math:`M_{0,0}` would be the identity matrix.
+
+The case :math:`d > d'`
+.......................
+
+In case :math:`d > d'` we define a entity of topological dimension :math:`d'`
+to be incident to a :math:`d`\ -dimensional one if all its vertices are
+incident to this entity of dimension :math:`d`.
+
+Since the :math:`d'`\ -dimensional mesh entities are defined by :math:`d' + 1`
+vertices the incidence matrix :math:`M_{d,d'}` is defined similarly to the
+previous section via the intersection matrix
+
+.. math::
+   :nowrap:
+
+   (M_{d,d'})_{ij} = m_{ij} = \begin{cases}
+                                  1 & (I_{d,d'})_{ij} = d' + 1 \\
+                                  0 & \text{else}
+	 		      \end{cases}
+
+
+Suppose, we want to know the incident edges for every cell of our sample
+mesh, i.e. we are interested in the incidence relation :math:`2 \to 1`.
+The necessary incidence matrices for computing the intersection are
+
+.. math::
+   :nowrap:
+
+   M_{2,0} = \begin{pmatrix}
+                 1 & 1 & 1 & 0 \\
+	         0 & 1 & 1 & 1
+	     \end{pmatrix}
+   \quad
+   M_{0,1} = \begin{pmatrix}
+                 1 & 1 & 0 & 0 & 0 \\
+		 1 & 0 & 1 & 1 & 0 \\
+		 0 & 1 & 1 & 0 & 1 \\
+		 0 & 0 & 0 & 1 & 1 \\
+	     \end{pmatrix}.
+
+Then the intersection matrix is
+
+.. math::
+   :nowrap:
+
+   M_{2,0} \cdot M_{0,1} = I_{2,1} = \begin{pmatrix}
+                                         2 & 2 & 2 & 1 & 1 \\
+					 1 & 1 & 2 & 2 & 2
+				     \end{pmatrix}
+
+and therefore the resulting incidence matrix would be
+
+.. math::
+   :nowrap:
+
+   M_{2,1} = \begin{pmatrix}
+                 1 & 1 & 1 & 0 & 0 \\
+		 0 & 0 & 1 & 1 & 1
+	     \end{pmatrix}.
+
+Computing Incidence Relations
++++++++++++++++++++++++++++++
+
+Now that we have the algorithms *build*, *transpose* and *intersection*
+we can construct the incidence matrix for any relation :math:`d \to d'`
+by a combination of those algorithms as follows::
+
+  Compute relation (d -> d')
+  --------------------------
+  
+      if relation (d -> 0) does not exist
+          build relation (d -> 0)
+
+      if relation (d' -> 0) does not exist
+          build relation (d' -> 0)
+
+      if d < d'
+          compute relation (d' -> d)
+	  transpose relation (d' -> d)
+      else
+          intersect relation (d -> dd)
+
+

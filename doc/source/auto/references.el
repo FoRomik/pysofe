@@ -2,5 +2,6 @@
  "references"
  (lambda ()
    (LaTeX-add-bibitems
-    "Logg09")))
+    "Logg09"
+    "Ludwig13")))
 

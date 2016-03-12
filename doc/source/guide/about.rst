@@ -11,9 +11,9 @@ The acronym :math:`\mathbb{SOFE}` is short for **S**\ imple and
 **E**\ lement **E**\ nvironment.
 
 It is partly based on the Matlab framework :math:`\mathbb{SOFE}` developped by
-`Dr. Lars Ludwig`_ as part of his dissertation ([Ludwig13]_). Although there are
-many similarities in the underlying concepts, it is not just a simple Python port
-but a separat project.
+`Dr. Lars Ludwig`_ as part of his dissertation (:cite:`Ludwig13`). Although there
+are many similarities in the underlying concepts, it is not just a simple Python
+port but a separat project.
 
 Besides being a finite element software the aim of Py\ :math:`\mathbb{SOFE}` is
 to provide insights into the implementational aspects of the method.
@@ -35,7 +35,7 @@ If you face any problems using Py\ :math:`\mathbb{SOFE}`, feel free to contact:
 License
 -------
 
-... .. literalinclude:: /../../LICENSE
+.. literalinclude:: /../../LICENSE
 
 
 .. _Dr. Lars Ludwig: http://www.math.tu-dresden.de/~ludwigl/index.html
