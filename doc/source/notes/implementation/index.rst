@@ -1,4 +1,4 @@
-.. _implementation:
+.. _notes_impl:
 
 Implementational Aspects
 ========================

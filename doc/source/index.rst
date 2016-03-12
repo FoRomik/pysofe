@@ -14,6 +14,7 @@ Welcome to Py\ **SOFE**\ *light*'s documentation!
    :maxdepth: 2
 
    guide/index
+   notes/index
    modules/index
 
 Indices and tables

@@ -1,16 +1,19 @@
+.. include:: /macros.hrst
+
 .. _guide:
 
 Py\ **SOFE**\ *light* User's Guide
 ==================================
 
-to be continued...
+This section is intended to provide an overview on what |PySOFE| is, its
+history and how to use it.
 
 .. toctree::
    :maxdepth: 1
 
    about
-   implementation/index
-
-.. rubric:: References
-
-.. bibliography:: /references.bib
+   getting_started
+   tutorial/index
+   examples/index
+   
+   

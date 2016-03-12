@@ -1,6 +1,6 @@
 .. include:: /macros.hrst
 
-.. _guide_impl_mesh_geometry:
+.. _notes_impl_mesh_geometry:
 
 The Mesh Geometry
 =================

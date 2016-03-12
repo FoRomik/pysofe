@@ -1,7 +1,6 @@
 .. include:: /macros.hrst
 
-.. _guide_impl_mesh_topology:
-
+.. _notes_impl_mesh_topology:
 
 The Mesh Topology
 =================
