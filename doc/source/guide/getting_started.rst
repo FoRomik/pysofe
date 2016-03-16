@@ -10,17 +10,12 @@ This section provides an overview on how to setup and use |PySOFE|.
 .. contents:: Contents
    :local:
 
-What is PySOFE?
-+++++++++++++++
-
-to be continued...
-
 Installation
 ++++++++++++
 
 to be continued...
 
-Introduction
-++++++++++++
+Usage
++++++
 
 to be continued...

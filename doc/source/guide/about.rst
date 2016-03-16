@@ -1,21 +1,23 @@
-.. _about:
+.. include:: /macros.hrst
+
+.. _guide_about:
 
 About Py\ **SOFE**
 ==================
 
-Py\ :math:`\mathbb{SOFE}` is Python library for solving partial differential
+|PySOFE| is Python library for solving partial differential
 equations using the finite element method.
 
 The acronym :math:`\mathbb{SOFE}` is short for **S**\ imple and
 **S**\ ophisticated **O**\ bject **O**\ riented **F**\ lexible **F**\ inite
 **E**\ lement **E**\ nvironment.
 
-It is partly based on the Matlab framework :math:`\mathbb{SOFE}` developped by
-`Dr. Lars Ludwig`_ as part of his dissertation (:cite:`Ludwig13`). Although there
-are many similarities in the underlying concepts, it is not just a simple Python
-port but a separat project.
+It is to some extent based on the Matlab framework :math:`\mathbb{SOFE}`
+developped by `Dr. Lars Ludwig`_ as part of his dissertation (:cite:`Ludwig13`).
+Although there are many similarities in the underlying concepts, it is not
+just a simple port but a separat project.
 
-Besides being a finite element software the aim of Py\ :math:`\mathbb{SOFE}` is
+Besides being a finite element software the aim of |PySOFE| is
 to provide insights into the implementational aspects of the method.
 
 This *light* version of the software provides all the basic capabilities
