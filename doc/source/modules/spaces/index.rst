@@ -3,7 +3,7 @@
 :mod:`spaces` Module
 ====================
 
-.. automodule:: pysofe_light.spaces
+.. automodule:: pysofe.spaces
 
 .. toctree::
    :maxdepth: 1

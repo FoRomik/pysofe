@@ -3,7 +3,7 @@
 :mod:`elements.base` Module
 ===========================
 
-.. automodule:: pysofe_light.elements.base
+.. automodule:: pysofe.elements.base
    :members:
    :member-order: bysource
 

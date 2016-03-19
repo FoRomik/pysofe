@@ -17,7 +17,7 @@ at all other nodes.
    \draw[black,fill=black] (1,0) circle (.5ex);
    \draw[black,fill=black] (0,1) circle (.5ex);
 
-.. autoclass:: pysofe_light.elements.simple.lagrange.P1
+.. autoclass:: pysofe.elements.simple.lagrange.P1
    :members:
    :member-order: bysource
 

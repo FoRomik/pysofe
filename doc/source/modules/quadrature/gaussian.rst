@@ -3,6 +3,6 @@
 :mod:`quadrature.gaussian` Module
 =================================
 
-.. automodule:: pysofe_light.quadrature.gaussian
+.. automodule:: pysofe.quadrature.gaussian
    :members:
    :member-order: bysource

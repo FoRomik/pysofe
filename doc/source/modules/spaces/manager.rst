@@ -3,6 +3,6 @@
 :mod:`spaces.manager` Module
 ============================
 
-.. automodule:: pysofe_light.spaces.manager
+.. automodule:: pysofe.spaces.manager
    :members:
    :member-order: bysource

@@ -5,7 +5,7 @@ Tests the Gaussian quadrature rules.
 import numpy as np
 import pytest
 
-from pysofe_light.quadrature.gaussian import GaussQuadSimp
+from pysofe.quadrature.gaussian import GaussQuadSimp
 
 # set global shortcut and tolerance
 fac = np.math.factorial

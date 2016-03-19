@@ -3,6 +3,6 @@
 :mod:`meshes.topology` Module
 =============================
 
-.. automodule:: pysofe_light.meshes.topology
+.. automodule:: pysofe.meshes.topology
    :members:
    :member-order: bysource

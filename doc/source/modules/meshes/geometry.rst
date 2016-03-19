@@ -3,6 +3,6 @@
 :mod:`meshes.geometry` Module
 =============================
 
-.. automodule:: pysofe_light.meshes.geometry
+.. automodule:: pysofe.meshes.geometry
    :members:
    :member-order: bysource

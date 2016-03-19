@@ -3,6 +3,6 @@
 :mod:`spaces.operators` Module
 ==============================
 
-.. automodule:: pysofe_light.spaces.operators
+.. automodule:: pysofe.spaces.operators
    :members:
    :member-order: bysource

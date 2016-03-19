@@ -5,10 +5,10 @@ Tests the operator data structures.
 import numpy as np
 import pytest
 
-from pysofe_light.meshes.mesh import Mesh
-from pysofe_light.elements.simple.lagrange import P1
-from pysofe_light.spaces.space import FESpace
-from pysofe_light.spaces import operators
+from pysofe.meshes.mesh import Mesh
+from pysofe.elements.simple.lagrange import P1
+from pysofe.spaces.space import FESpace
+from pysofe.spaces import operators
 
 # define mesh nodes and cells
 nodes_2d = np.array([[ 0. ,  0. ],

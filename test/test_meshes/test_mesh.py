@@ -5,7 +5,7 @@ Tests the mesh data structure.
 import numpy as np
 import pytest
 
-from pysofe_light.meshes.mesh import Mesh
+from pysofe.meshes.mesh import Mesh
 
 # define mesh nodes and cells
 nodes_2d = np.array([[ 0. ,  0. ],

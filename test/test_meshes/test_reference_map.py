@@ -5,7 +5,7 @@ Tests for the families of reference maps.
 import numpy as np
 import pytest
 
-from pysofe_light import meshes
+from pysofe import meshes
 
 # define mesh nodes and cells
 nodes_2d = np.array([[ 0. ,  0. ],

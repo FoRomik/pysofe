@@ -5,7 +5,7 @@ Tests for mesh topologies.
 import numpy as np
 import pytest
 
-from pysofe_light import meshes
+from pysofe import meshes
 
 # the 1D test mesh
 #

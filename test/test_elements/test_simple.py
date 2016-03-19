@@ -5,7 +5,7 @@ Tests for simple finite elements.
 import numpy as np
 import pytest
 
-from pysofe_light import elements
+from pysofe import elements
 
 simplicial_vertices = dict()
 simplicial_vertices[1] = np.array([[0., 1.]])

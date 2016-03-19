@@ -3,7 +3,7 @@
 :mod:`meshes.reference_map` Module
 ==================================
 
-.. automodule:: pysofe_light.meshes.reference_map
+.. automodule:: pysofe.meshes.reference_map
    :members:
    :member-order: bysource
    

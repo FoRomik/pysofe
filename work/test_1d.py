@@ -1,10 +1,10 @@
 import numpy as np
 from IPython import embed as IPS
 
-import pysofe_light as pysofe
-from pysofe_light.elements import P1
-from pysofe_light.meshes import Mesh
-from pysofe_light.spaces import FESpace
+import pysofe
+from pysofe.elements import P1
+from pysofe.meshes import Mesh
+from pysofe.spaces import FESpace
 
 # create shape element and mesh
 p1 = P1(dimension=2)

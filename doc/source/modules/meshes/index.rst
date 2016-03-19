@@ -3,7 +3,7 @@
 :mod:`meshes` Module
 ====================
 
-.. automodule:: pysofe_light.meshes
+.. automodule:: pysofe.meshes
 
 .. toctree::
    :maxdepth: 1

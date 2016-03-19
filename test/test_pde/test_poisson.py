@@ -3,7 +3,7 @@ Tests the Poisson equation.
 """
 
 import numpy as np
-import pysofe_light as pysofe
+import pysofe
 
 # create neccessary setup
 

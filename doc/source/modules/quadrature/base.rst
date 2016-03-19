@@ -3,7 +3,7 @@
 :mod:`quadrature.base` Module
 =============================
 
-.. automodule:: pysofe_light.quadrature.base
+.. automodule:: pysofe.quadrature.base
    :members:
    :member-order: bysource
    

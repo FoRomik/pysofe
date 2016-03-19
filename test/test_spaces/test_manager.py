@@ -5,10 +5,10 @@ Tests the dof manager data structure.
 import numpy as np
 import pytest
 
-from pysofe_light.meshes import Mesh
-from pysofe_light.elements.base import Element
-from pysofe_light.elements import P1
-from pysofe_light.spaces.manager import DOFManager
+from pysofe.meshes import Mesh
+from pysofe.elements.base import Element
+from pysofe.elements import P1
+from pysofe.spaces.manager import DOFManager
 
 # create test meshes and elements
 

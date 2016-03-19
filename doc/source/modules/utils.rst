@@ -3,7 +3,7 @@
 :mod:`utils` Module
 ===================
 
-.. automodule:: pysofe_light.utils
+.. automodule:: pysofe.utils
    :members:
    :member-order: bysource
    

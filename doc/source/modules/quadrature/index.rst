@@ -3,7 +3,7 @@
 :mod:`quadrature` Module
 ========================
 
-.. automodule:: pysofe_light.quadrature
+.. automodule:: pysofe.quadrature
 
 .. toctree::
    :maxdepth: 1
