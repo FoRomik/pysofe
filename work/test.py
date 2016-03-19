@@ -17,7 +17,7 @@ mesh = Mesh(nodes, cells)
 # refine the mesh
 #mesh.refine(times=1)
 
-p1._dof_tuple = (1,2,1)
-dm = DOFManager(mesh, p1)
+p1._dof_tuple = (2,2,2)
+fe_space = FESpace(mesh, p1)
 
 IPS()

@@ -38,6 +38,9 @@ def show(obj, *args, **kwargs):
     elif isinstance(obj, pysofe.quadrature.gaussian.GaussQuadSimp):
         V = QuadRuleVisualizer()
         V.show(obj, *args, **kwargs)
+    elif isinstance(obj, pysofe.spaces.space.FESpace):
+        V = FESpaceVisualizer()
+        V.show(obj, *args, **kwargs)
 #    elif isinstance(obj, (pysofe.spaces.functions.FEFunction,
 #                          pysofe.spaces.functions.MeshFunction)):
 #        V = FunctionVisualizer()
@@ -550,5 +553,67 @@ class QuadRuleVisualizer(Visualizer):
             axes.set_xlim(xlim)
             axes.set_ylim(ylim)
 
+
+        return fig, axes
+
+class FESpaceVisualizer(Visualizer):
+    """
+    Visualizes the finite element space by plotting 
+    its degrees of freedom.
+    """
+
+    def _plot(self, fe_space, *args, **kwargs):
+        fontsize = kwargs.get('fontsize', 9)
+
+        # first plot the mesh
+        mesh = fe_space.mesh
+        V = MeshVisualizer()
+        fig, axes = V.plot(mesh)
+
+        # get number of entities for each topological dimension
+        n_entities = mesh.topology.n_entities
+        dof_tuple = fe_space.element.dof_tuple
+        n_dof_per_dim = np.asarray(n_entities) * dof_tuple
+
+        dofs = np.arange(fe_space.n_dof) + 1
+        entity_dofs = [zip(*(arr.reshape((dof_tuple[i], -1))))
+                       for i, arr in
+                       enumerate(np.split(dofs, n_dof_per_dim.cumsum()[:-1]))]
+
+        # plot dofs for each topological dimension
+        
+        # nodes
+        for i in xrange(mesh.nodes.shape[0]):
+            if mesh.dimension == 1:
+                axes.text(x=mesh.nodes[i,0], y=0., s=entity_dofs[0][i],
+                          color='red', fontsize=fontsize)
+            elif mesh.dimension == 2:
+                axes.text(x=mesh.nodes[i,0], y=mesh.nodes[i,1],
+                          s=entity_dofs[0][i],
+                          color='red', fontsize=fontsize)
+            else:
+                raise NotImplementedError()
+
+        # edges
+        edges = mesh.edges
+        bary = 0.5 * mesh.nodes[edges - 1,:].sum(axis=1)
+        for i in xrange(edges.shape[0]):
+            if mesh.dimension == 1:
+                axes.text(x=bary[i,0], y=0, s=entity_dofs[1][i],
+                          color='red', fontsize=fontsize)
+            elif mesh.dimension == 2:
+                axes.text(x=bary[i,0], y=bary[i,1], s=entity_dofs[1][i],
+                          color='red', fontsize=fontsize)
+
+        # elements
+        if mesh.dimension > 1:
+            cells = mesh.cells
+            bary = mesh.nodes[cells - 1,:].sum(axis=1) / 3.
+            for i in xrange(cells.shape[0]):
+                axes.text(x=bary[i,0], y=bary[i,1], s=entity_dofs[2][i],
+                          color='red', fontsize=fontsize)
+
+
+                
 
         return fig, axes
