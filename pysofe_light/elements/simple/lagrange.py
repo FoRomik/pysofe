@@ -22,8 +22,8 @@ class P1(Element):
 
     def __init__(self, dimension):
         order = 1
-        n_basis = (2, 3, 4)[:dimension]
-        n_verts = (2, 3, 4)[:dimension]
+        n_basis = (1, 2, 3, 4)[:(dimension+1)]
+        n_verts = (1, 2, 3, 4)[:(dimension+1)]
         
         Element.__init__(self, dimension, order, n_basis, n_verts)
 
@@ -35,7 +35,7 @@ class P1(Element):
 
         # get number of basis functions associated with
         # the entities of this dimension
-        nB = self.n_basis[nD - 1]
+        nB = self.n_basis[nD]
 
         # evaluate the basis functions
         basis = np.zeros((nB, nP))
@@ -52,7 +52,7 @@ class P1(Element):
 
         # get number of basis functions associated with
         # the entities of this dimension
-        nB = self.n_basis[nD - 1]
+        nB = self.n_basis[nD]
 
         # evaluate the basis functions
         basis = np.zeros((nB, nP, nD))
@@ -69,7 +69,7 @@ class P1(Element):
 
         # get number of basis functions associated with
         # the entities of this dimension
-        nB = self.n_basis[nD - 1]
+        nB = self.n_basis[nD]
 
         # evaluate the basis functions
         basis = np.zeros((nB, nP, nD, nD))

@@ -18,7 +18,7 @@ nodes_1d = np.array([[0.], [.3], [.6], [1.]])
 cells_1d = np.array([[1,2], [2,3], [3,4]])
 mesh_1d = Mesh(nodes_1d, cells_1d)
 
-elem_1d = Element(dimension=1, order=3, n_basis=(4,), n_verts=(2,))
+elem_1d = Element(dimension=1, order=3, n_basis=(1,4), n_verts=(1,2))
 elem_1d._dof_tuple = (1, 2)
 
 # 2D
@@ -27,7 +27,7 @@ nodes_2d = np.array([[0.,0.], [1.,0.], [0.,1.], [1.,1.]])
 cells_2d = np.array([[1,2,3], [2,3,4]])
 mesh_2d = Mesh(nodes_2d, cells_2d)
 
-elem_2d = Element(dimension=2, order=3, n_basis=(4, 10), n_verts=(2,3))
+elem_2d = Element(dimension=2, order=3, n_basis=(1,4,10), n_verts=(1,2,3))
 elem_2d._dof_tuple = (1, 2, 1)
 
 # 3D
@@ -36,7 +36,7 @@ nodes_3d = np.array([[0.,0.,0.], [1.,0.,0.], [0.,1.,0.], [0.,0.,1.], [1.,1.,1.]]
 cells_3d = np.array([[1, 2, 3, 4], [2, 3, 4, 5]])
 mesh_3d = Mesh(nodes_3d, cells_3d)
 
-elem_3d = Element(dimension=3, order=4, n_basis=(5, 15, 35), n_verts=(2,3,4))
+elem_3d = Element(dimension=3, order=4, n_basis=(1,5,15,35), n_verts=(1,2,3,4))
 elem_3d._dof_tuple = (1, 3, 3, 1)
 
 class TestDOFManager1DP3(object):
@@ -53,7 +53,7 @@ class TestDOFManager1DP3(object):
     def test_dof_map_cells(self):
         dof_map = self.dm.get_dof_map(d=1)
 
-        assert dof_map.shape[0] == self.dm._element.n_basis[0]
+        assert dof_map.shape[0] == self.dm._element.n_basis[1]
         assert np.all(dof_map == np.array([[1, 2, 3],
                                            [2, 3, 4],
                                            [5, 6, 7],
@@ -85,7 +85,7 @@ class TestDOFManager2DP3(object):
     def test_dof_map_edges(self):
         dof_map = self.dm.get_dof_map(d=1)
 
-        assert dof_map.shape[0] == self.dm._element.n_basis[0]
+        assert dof_map.shape[0] == self.dm._element.n_basis[1]
         assert np.all(dof_map == np.array([[ 1,  1,  2,  2,  3],
                                            [ 2,  3,  3,  4,  4],
                                            [ 5,  6,  7,  8,  9],
@@ -94,7 +94,7 @@ class TestDOFManager2DP3(object):
     def test_dof_map_cells(self):
         dof_map = self.dm.get_dof_map(d=2)
 
-        assert dof_map.shape[0] == self.dm._element.n_basis[1]
+        assert dof_map.shape[0] == self.dm._element.n_basis[2]
         assert np.all(dof_map == np.array([[ 1,  2],
                                            [ 2,  3],
                                            [ 3,  4],
@@ -144,7 +144,7 @@ class TestDOFManager3DP4(object):
     def test_dof_map_edges(self):
         dof_map = self.dm.get_dof_map(d=1)
 
-        assert dof_map.shape[0] == self.dm._element.n_basis[0]
+        assert dof_map.shape[0] == self.dm._element.n_basis[1]
         assert np.all(dof_map == np.array([[ 1,  1,  1,  2,  2,  2,  3,  3,  4],
                                            [ 2,  3,  4,  3,  4,  5,  4,  5,  5],
                                            [ 6,  7,  8,  9, 10, 11, 12, 13, 14],
@@ -154,7 +154,7 @@ class TestDOFManager3DP4(object):
     def test_dof_map_faces(self):
         dof_map = self.dm.get_dof_map(d=2)
 
-        assert dof_map.shape[0] == self.dm._element.n_basis[1]
+        assert dof_map.shape[0] == self.dm._element.n_basis[2]
         assert np.all(dof_map == np.array([[ 1,  1,  1,  2,  2,  2,  3],
                                            [ 2,  2,  3,  3,  3,  4,  4],
                                            [ 3,  4,  4,  4,  5,  5,  5],
@@ -174,7 +174,7 @@ class TestDOFManager3DP4(object):
     def test_dof_map_cells(self):
         dof_map = self.dm.get_dof_map(d=3)
 
-        assert dof_map.shape[0] == self.dm._element.n_basis[2]
+        assert dof_map.shape[0] == self.dm._element.n_basis[3]
         assert np.all(dof_map == np.array([[ 1,  2],
                                            [ 2,  3],
                                            [ 3,  4],
