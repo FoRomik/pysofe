@@ -32,7 +32,7 @@ class Element(object):
 
     n_verts : iterable
         The number of vertices for the entities of
-        each spatial dimension
+        each topological dimension
     """
 
     is_nodal = False
