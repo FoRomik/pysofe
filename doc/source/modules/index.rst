@@ -1,7 +1,7 @@
 .. _modules:
 
-Py\ **SOFE**\ *light* Modules Reference
-=======================================
+Py\ **SOFE**\  Modules Reference
+================================
 
 .. toctree::
    :maxdepth: 1

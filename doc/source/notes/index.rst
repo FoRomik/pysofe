@@ -2,8 +2,8 @@
 
 .. _notes:
 
-Py\ **SOFE**\ *light* Background Notes
-======================================
+Py\ **SOFE**\  Background Notes
+===============================
 
 This section is intended to provide information on both the theoretical
 background of |PySOFE| and the implementational aspects.

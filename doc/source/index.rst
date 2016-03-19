@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Py\ **SOFE**\ *light*'s documentation!
-=================================================
+Welcome to Py\ **SOFE**\ 's documentation!
+==========================================
 
 .. warning::
    This documentation is under construction and does not cover every

@@ -2,8 +2,8 @@
 
 .. _guide:
 
-Py\ **SOFE**\ *light* User's Guide
-==================================
+Py\ **SOFE**\  User's Guide
+===========================
 
 This section is intended to provide an overview on what |PySOFE| is, its
 history and how to use it.

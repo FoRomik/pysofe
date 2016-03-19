@@ -5,7 +5,7 @@ Provides the data structure for the family of reference maps.
 # IMPORTS
 import numpy as np
 
-from pysofe_light.elements.simple.lagrange import P1
+from ..elements.simple.lagrange import P1
 
 # DEBUGGING
 from IPython import embed as IPS

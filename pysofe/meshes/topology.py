@@ -7,7 +7,7 @@ import numpy as np
 from scipy import sparse
 import itertools
 
-from pysofe_light.utils import unique_rows
+from ..utils import unique_rows
 
 # DEBUGGING
 from IPython import embed as IPS

@@ -14,7 +14,7 @@ except ImportError as err:
 
 import numpy as np
 
-import pysofe_light as pysofe
+import pysofe
 
 def show(obj, *args, **kwargs):
     """
