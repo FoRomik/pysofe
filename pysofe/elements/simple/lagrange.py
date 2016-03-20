@@ -9,7 +9,7 @@ from ..base import Element
 
 class P1(Element):
     """
-    Linear simplical Lagrange element.
+    Linear Lagrange basis functions on simplicial domains.
 
     Parameters
     ----------
