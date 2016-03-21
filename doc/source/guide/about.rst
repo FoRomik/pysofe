@@ -5,40 +5,41 @@
 About Py\ **SOFE**
 ==================
 
-|PySOFE| is Python library for solving partial differential
-equations using the finite element method.
+|PySOFE| is Python library for solving partial differential equations
+using the finite element method in 1D, 2D or 3D.
 
-The acronym :math:`\mathbb{SOFE}` is short for **S**\ imple and
-**S**\ ophisticated **O**\ bject **O**\ riented **F**\ lexible **F**\ inite
-**E**\ lement **E**\ nvironment.
+Furthermore, the aim of this project is to provide background information
+on both the theoretical and implementational aspects of the finite element
+method. It is also intended to be a starting point for other people, who
+are interested in the method, to implement it themselves.
 
-It is to some extent based on the Matlab framework :math:`\mathbb{SOFE}`
-developped by `Dr. Lars Ludwig`_ as part of his dissertation (:cite:`Ludwig13`).
-Although there are many similarities in the underlying concepts, it is not
-just a simple port but a separat project.
+.. The acronym :math:`\mathbb{SOFE}` is short for **S**\ imple and
+   **S**\ ophisticated **O**\ bject **O**\ riented **F**\ lexible **F**\ inite
+   **E**\ lement **E**\ nvironment.
 
-Besides being a finite element software the aim of |PySOFE| is
-to provide insights into the implementational aspects of the method.
+|PySOFE| as a project emerged from the lecture *FEM: Practical Aspects*
+given by `Dr. Lars Ludwig <http://www.math.tu-dresden.de/~ludwigl/>`_ at
+`Dresden University of Technology <https://www.tu-dresden.de>`_ during the
+winter term 2014/15 and is based in parts on the Matlab framework |SOFE| he
+developped for his dissertation (:cite:`Ludwig13`).
 
-This *light* version of the software provides all the basic capabilities
-to solve static linear equations but lacks some of the more advanced features.
+Although there are many similarities in the underlying concepts, |PySOFE| is
+a separat project.
 
-.. _contacts:
+.. _guide_contacts:
 
 Contacts
 --------
 
-If you face any problems using Py\ :math:`\mathbb{SOFE}`, feel free to contact:
+If you face any problems using |PySOFE|, feel free to contact:
 
 * andreas.kunze <at> mailbox.tu-dresden.de
 
-.. _license:
+.. _guide_license:
 
 License
 -------
 
 .. literalinclude:: /../../LICENSE
 
-
-.. _Dr. Lars Ludwig: http://www.math.tu-dresden.de/~ludwigl/index.html
 
