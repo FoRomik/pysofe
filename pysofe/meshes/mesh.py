@@ -230,3 +230,49 @@ class Mesh(object):
 
         return values            # nE x nP x nD
         # return np.vstack(values) # (nE*nP) x nD
+
+class UnitSquareMesh(Mesh):
+    """
+    Discretizes the domain of the unit square in 2D.
+
+    Parameters
+    ----------
+
+    nx : int
+        Number of nodes in the x-direction
+
+    ny : int
+        Number of nodes in the y-direction
+    """
+
+    def __init__(self, nx=10, ny=10):
+        nodes = self._create_nodes(nx, ny)
+        cells = self._create_cells(nx, ny)
+
+        Mesh.__init__(self, nodes, cells)
+
+    @staticmethod
+    def _create_nodes(nx, ny):
+        ls_x = np.linspace(0., 1., nx)
+        ls_y = np.linspace(0., 1., ny)
+
+        x, y = np.meshgrid(ls_x, ls_y)
+
+        nodes = np.vstack([x.flat, y.flat]).T
+
+        return nodes
+
+    @staticmethod
+    def _create_cells(nx, ny):
+        indices = np.arange(nx * ny, dtype='int') + 1
+
+        tmp = np.where(indices[:-nx] % nx)[0] + 1
+        first_nodes  = np.hstack([tmp,    tmp+1])
+        second_nodes = np.hstack([tmp+1,  tmp+nx])
+        third_nodes  = np.hstack([tmp+nx, tmp+nx+1])
+
+        cells = np.vstack([first_nodes,
+                           second_nodes,
+                           third_nodes]).T
+
+        return cells
