@@ -38,10 +38,10 @@ class FEFunction(object):
         '''
         return self.fe_space.element.order
         
-    def __call__(self, points, d=0, local=False):
-        return self._evaluate(points, d, local)
+    def __call__(self, points, deriv=0):
+        return self._evaluate(points, deriv)
     
-    def _evaluate(self, points, d=0):
+    def _evaluate(self, points, deriv=0):
         '''
         Evaluates the function or its derivatives at given points.
 
@@ -51,7 +51,7 @@ class FEFunction(object):
         points : array_like
             The local points at the reference domain
 
-        d : int
+        deriv : int
             The derivation order
         '''
 
@@ -59,22 +59,22 @@ class FEFunction(object):
         dim = np.size(points, axis=0)
 
         # check input
-        if dim < self.fe_space.mesh.dimension and d > 0:
+        if dim < self.fe_space.mesh.dimension and deriv > 0:
             raise NotImplementedError('Higher order derivatives for traces not supported!')
         
         # get dof map and adjust values
-        dof_map = self.fe_space._get_dof_map(d=dim)
+        dof_map = self.fe_space.get_dof_map(d=dim)
 
-        values = np.sign(dof_map) * self.dofs.take(indices=np.abs(dof_map)-1, axis=0)
+        values = dof_map * self.dofs.take(indices=dof_map-1, axis=0)
 
         # evaluate basis functions (or derivatives)
-        if d == 0:
+        if deriv == 0:
             # values : nB x nE
-            basis = self.fe_space.element.eval_basis(points, d=d)          # nB x nP
+            basis = self.fe_space.element.eval_basis(points, deriv)          # nB x nP
                 
             #U = np.dot(values.T, basis)                                    # nE x nP
             U = (values[:,:,None] * basis[:,None,:]).sum(axis=0)           # nE x nP
-        elif d == 1:
+        elif deriv == 1:
             # values : nB x nE
             dbasis_global = self.fe_space.eval_global_derivatives(points)  # nE x nB x nP x nD
                 

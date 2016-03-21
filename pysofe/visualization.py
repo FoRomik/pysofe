@@ -15,6 +15,7 @@ except ImportError as err:
 import numpy as np
 
 import pysofe
+from .utils import unique_rows, sub_grid_nodes
 
 def show(obj, *args, **kwargs):
     """
@@ -41,10 +42,9 @@ def show(obj, *args, **kwargs):
     elif isinstance(obj, pysofe.spaces.space.FESpace):
         V = FESpaceVisualizer()
         V.show(obj, *args, **kwargs)
-#    elif isinstance(obj, (pysofe.spaces.functions.FEFunction,
-#                          pysofe.spaces.functions.MeshFunction)):
-#        V = FunctionVisualizer()
-#        V.show(fnc=obj, **kwargs)
+    elif isinstance(obj, pysofe.spaces.functions.FEFunction):
+        V = FunctionVisualizer()
+        V.show(obj, **kwargs)
     else:
         raise NotImplementedError()
 
@@ -309,6 +309,8 @@ class FunctionVisualizer(Visualizer):
 
         '''
 
+        self.fnc = fnc
+        
         mode = kwargs.get('mode', 'trisurface')
 
         # get visualization data
@@ -367,10 +369,6 @@ class FunctionVisualizer(Visualizer):
         elif mode in ('tripcolor', 'heatmap'):
             self._plot_tripcolor(axes=axes, X=points[0], Y=points[1], triangles=cells,
                                  Z=values, **kwargs)
-        elif mode == 'surface':
-            self._plot_surface(axes=axes, X=points[0], Y=points[1], Z=values, **kwargs)
-        elif mode == 'wireframe':
-            self._plot_wireframe(axes=axes, X=points[0], Y=points[1], Z=values, **kwargs)
 
         return fig, axes
 
@@ -383,7 +381,8 @@ class FunctionVisualizer(Visualizer):
         # project them to their global counterparts
         order = 'C'
 
-        points = self.fnc.fe_space.mesh.ref_map.eval(points=local_points, d=0)
+        points = self.fnc.fe_space.mesh.ref_map.eval(points=local_points,
+                                                     deriv=0)
             
         points = np.vstack([points[:,:,0].ravel(order=order), points[:,:,1].ravel(order=order)])
 
@@ -408,7 +407,7 @@ class FunctionVisualizer(Visualizer):
             fnc_args = kwargs.get('fnc_args', dict())
             
             if kwargs.get('eval_local', True):
-                values = self.fnc(points=local_points, d=d, local=True, **fnc_args)
+                values = self.fnc(points=local_points, deriv=d, **fnc_args)
             else:
                 values = self.fnc(points=points, d=d, local=False, **fnc_args)
                 

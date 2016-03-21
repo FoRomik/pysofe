@@ -36,3 +36,24 @@ def unique_rows(A, return_index=False, return_inverse=False):
             + B[1:]
     else:
         return B.view(A.dtype).reshape((-1, A.shape[1]), order='C')
+
+def sub_grid_nodes(n):
+    '''
+    Returns the nodes of the sub grid triangles...???
+    
+    Parameters
+    ----------
+
+    n : int
+        Number of grid points on each edge
+    '''
+
+    assert n >= 2
+
+    ls = np.linspace(0., 1., n)
+    x0, x1 = np.meshgrid(ls,ls)
+
+    nodes = np.vstack([x0.flat, x1.flat])
+    nodes = nodes.compress(nodes.sum(axis=0) <= 1., axis=1)
+
+    return nodes
