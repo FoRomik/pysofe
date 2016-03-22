@@ -64,7 +64,7 @@ class FEFunction(object):
         # check input
         if dim < self.fe_space.mesh.dimension and deriv > 0:
             raise NotImplementedError('Higher order derivatives for traces not supported!')
-        
+
         # get dof map and adjust values
         dof_map = self.fe_space.get_dof_map(d=dim)
 

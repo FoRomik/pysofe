@@ -11,6 +11,9 @@ from .geometry import MeshGeometry
 from .topology import MeshTopology
 from .reference_map import ReferenceMap
 
+# DEBUGGING
+from IPython import embed as IPS
+
 class Mesh(object):
     """
     Provides a class for general meshes.

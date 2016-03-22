@@ -14,7 +14,7 @@ cells = array([[1,2,3],[4,3,2]])
 mesh = Mesh(nodes, cells)
 
 # refine the mesh
-mesh.refine(times=4)
+mesh.refine(times=5)
 
 # create reference element
 p1_elem = P1(2)

@@ -313,18 +313,17 @@ class FunctionVisualizer(Visualizer):
         '''
 
         self.fnc = fnc
-        
-        mode = kwargs.get('mode', 'trisurface')
+
+        if fnc.fe_space.mesh.dimension == 1:
+            mode = '1dplot'
+        elif fnc.fe_space.mesh.dimension == 2:
+            mode = kwargs.get('mode', 'trisurface')
+        else:
+            raise NotImplementedError()
 
         # get visualization data
         #----------------------------------------------------
-        if mode in ('trisurface', 'tripcolor', 'heatmap'):
-            # get points, values and triangles for the plot
-            points, values, cells = self._get_triangulation_data(**kwargs)
-            values = np.atleast_2d(values)
-        
-        else:
-            raise ValueError('Invalid visualization mode for functions! ({})'.format(mode))
+        points, values, cells = self._get_visualizetion_data(mode, **kwargs)
 
         # set up figure and axes
         #----------------------------------------------------
@@ -366,7 +365,9 @@ class FunctionVisualizer(Visualizer):
 
         # called plotting routine specified by `mode`
         #----------------------------------------------------
-        if mode == 'trisurface':
+        if mode == '1dplot':
+            axes[0,0].plot(points[0], values[0])
+        elif mode == 'trisurface':
             self._plot_trisurf(axes=axes, X=points[0], Y=points[1], triangles=cells,
                                Z=values, **kwargs)
         elif mode in ('tripcolor', 'heatmap'):
@@ -374,6 +375,28 @@ class FunctionVisualizer(Visualizer):
                                  Z=values, **kwargs)
 
         return fig, axes
+
+    def _get_visualizetion_data(self, mode, **kwargs):
+        if mode in ('1dplot',):
+            local_points = np.linspace(0., 1., 10)[None,:]
+
+            points = self.fnc.fe_space.mesh.ref_map.eval(local_points)
+            _, I = np.unique(points.flat, return_index=True)
+            points = points.ravel().take(I)[None,:]
+            
+            values = self.fnc(points=local_points, deriv=0).ravel().take(I)
+            values = np.atleast_2d(values)
+            
+            cells = np.arange(points.size, dtype='int').repeat(2)[1:-1].reshape((-1,2))
+
+            return points, values, cells
+        elif mode in ('trisurface', 'tripcolor', 'heatmap'):
+            # get points, values and triangles for the plot
+
+            return self._get_triangulation_data(**kwargs)
+        else:
+            msg = "Invalid visualization mode for functions! ({})"
+            raise ValueError(msg.format(mode))
 
     def _get_triangulation_data(self, **kwargs):
         # generate local points for the function evaluation
@@ -425,6 +448,8 @@ class FunctionVisualizer(Visualizer):
         from scipy.spatial import Delaunay
         cells = Delaunay(points.T).simplices
 
+        values = np.atleast_2d(values)
+        
         return points, values, cells
 
     def _plot_trisurf(self, axes, X, Y, triangles, Z, **kwargs):
