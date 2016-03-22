@@ -9,6 +9,9 @@ from ..spaces import operators
 
 from scipy.sparse import linalg as sparse_linalg
 
+# DEBUGGING
+from IPython import embed as IPS
+
 class Poisson(PDE):
     """
     Represents the linear Poisson equation
@@ -54,7 +57,7 @@ class Poisson(PDE):
         # next, transform matrix formats for faster arithmetic
         rhs = self.stiffness.tocsr()
         lhs = self.load.tocsr()
-            
+
         # then, solve the discrete system
         self.solution = sparse_linalg.spsolve(rhs, lhs)
 

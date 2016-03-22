@@ -5,6 +5,9 @@ Provides convinience classes for functions in the fem framework.
 # IMPORTS
 import numpy as np
 
+# DEBUGGING
+from IPython import embed as IPS
+
 class FEFunction(object):
     '''
     A finite element function defined via degrees of freedoms.
@@ -65,7 +68,7 @@ class FEFunction(object):
         # get dof map and adjust values
         dof_map = self.fe_space.get_dof_map(d=dim)
 
-        values = dof_map * self.dofs.take(indices=dof_map-1, axis=0)
+        values = self.dofs.take(indices=dof_map-1, axis=0)
 
         # evaluate basis functions (or derivatives)
         if deriv == 0:

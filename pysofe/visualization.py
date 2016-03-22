@@ -12,6 +12,9 @@ except ImportError as err:
     # ... do some stuff here
     raise err
 
+# DEBUGGING
+from IPython import embed as IPS
+
 import numpy as np
 
 import pysofe
@@ -360,7 +363,7 @@ class FunctionVisualizer(Visualizer):
             assert axes.ndim == 2
             assert nrows <= axes.shape[0]
             assert ncols <= axes.shape[1]
-        
+
         # called plotting routine specified by `mode`
         #----------------------------------------------------
         if mode == 'trisurface':

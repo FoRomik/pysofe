@@ -14,7 +14,7 @@ cells = array([[1,2,3],[4,3,2]])
 mesh = Mesh(nodes, cells)
 
 # refine the mesh
-mesh.refine(times=3)
+mesh.refine(times=4)
 
 # create reference element
 p1_elem = P1(2)
@@ -28,7 +28,7 @@ def dirichlet_domain(x):
     dir1 = logical_or(x[1] == 0., x[1] == 1.)
     return logical_or(dir0, dir1)
 
-g = 0.
+g = 1.
 
 dir_bc = DirichletBC(Vh, dirichlet_domain, g)
 
