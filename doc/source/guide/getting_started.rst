@@ -62,7 +62,7 @@ Consider the linear *Poisson* equation on the unit square in 2D with homogeneous
 
 with the constant coefficient :math:`a` and the right hand site
 :math:`f \in L^2(\Omega)`. To keep things simple let :math:`a = 1` and define
-:math:`f(x) = x_0 + x_1`.
+:math:`f(x) = x_0 + x_1` where :math:`x = (x_0,x_1)\in\Omega\subset\mathbb{R}^2`.
 
 First, we create the mesh that discretizes the spatial domain :math:`\Omega`
 of our problem. To do so we import the predefined class |UnitSquareMesh| and

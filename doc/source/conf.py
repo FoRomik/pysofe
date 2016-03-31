@@ -227,6 +227,10 @@ latex_elements = {
 
 # Additional stuff for the LaTeX preamble.
 #'preamble': '',
+'preamble' : '''
+\usepackage{amsmath, amssymb}
+\usepackage{tikz}
+'''
 
 # Latex figure (float) alignment
 #'figure_align': 'htbp',

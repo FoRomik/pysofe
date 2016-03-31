@@ -4,5 +4,6 @@
    (LaTeX-add-bibitems
     "Logg09"
     "Ludwig13"
-    "Courant43")))
+    "Courant43"
+    "Larson13")))
 
