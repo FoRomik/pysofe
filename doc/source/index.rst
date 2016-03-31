@@ -7,8 +7,10 @@ Welcome to Py\ **SOFE**\ 's documentation!
 ==========================================
 
 .. warning::
-   This documentation is under construction and does not cover every
-   functionality and theoretical background information at all!
+   This documentation is under construction and several aspects might
+   be missing or are not covered in detail. Especially the sections on
+   the theoretical and implementational background are still very
+   "work in progress".
 
 .. toctree::
    :maxdepth: 2

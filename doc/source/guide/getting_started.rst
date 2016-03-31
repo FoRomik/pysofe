@@ -32,15 +32,27 @@ If you have troubles installing |PySOFE|, please don't hesitate to
 PyPI
 ----
 
-to be continued...
-     
+|PySOFE| is hosted at the `Python Packaging Index
+<https://pypi.python.org/pypi>`_ so the easiest way of installing it
+would be by running::
+
+  $ pip install pysofe
+
+in a terminal, provided that you have installed the Python module `pip
+<https://pypi.python.org/pypi/pip>`_
+
 .. _guide_install_source:
 
 Source
 ------
 
-to be continued...
-     
+If would like to install |PySOFE| from the source code files please
+download the latest release from `here (TODO: INSERT LINK)`. After the
+download is complete open the archive and change directory into the
+extracted folder. Then run the following command::
+
+  $ python setup.py install
+
 .. _guide_usage:
      
 Usage
@@ -143,6 +155,6 @@ and can be visualized with ::
   >>> import pysofe
   >>> pysofe.show(u)
 
-which will produce the following graphics.
+which should produce the following graphics.
 
 .. .. image:: /pics/usage_example_solution.png
