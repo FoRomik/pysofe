@@ -22,7 +22,7 @@ class Poisson(PDE):
     Parameters
     ----------
     
-    fe_space : pysofe_light.spaces.space.FESpace
+    fe_space : pysofe.spaces.space.FESpace
         The considered function space
     
     a : callable
@@ -31,7 +31,7 @@ class Poisson(PDE):
     f : callable
         The right hand site function
     
-    bc : pysofe_light.pde.conditions.BoundaryCondition, iterable
+    bc : pysofe.pde.conditions.BoundaryCondition, iterable
         The boundary condition(s)
     """
 

@@ -15,7 +15,7 @@ class FEFunction(object):
     Parameters
     ----------
 
-    fe_space : pysofe.spaces.FESpace
+    fe_space : pysofe.spaces.space.FESpace
         The function space
 
     dof_values : array_like

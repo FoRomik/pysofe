@@ -15,4 +15,5 @@ in |PySOFE|.
    meshes/index
    quadrature/index
    spaces/index
+   pde/index
    utils

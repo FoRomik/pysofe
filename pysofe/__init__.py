@@ -2,8 +2,10 @@
 PySOFE
 ======
 
-A simple and sophisticated object oriented flexible finite element environment
-for the solution of partial differential equations written in python.
+A simple and sophisticated object oriented flexible finite element
+environment for the solution of partial differential equations written
+in python.
+
 """
 
 # current version
@@ -17,4 +19,8 @@ import pde
 import utils
 import visualization
 
+from .elements import P1
+from .meshes import Mesh, UnitSquareMesh
+from .spaces import FESpace
+from .pde import Poisson, DirichletBC
 from .visualization import show

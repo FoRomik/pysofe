@@ -32,7 +32,7 @@ a separat project.
 Contacts
 --------
 
-If you face any problems using |PySOFE|, feel free to contact:
+If you face any problems using |PySOFE|, feel free to contact me:
 
 * andreas.kunze <at> mailbox.tu-dresden.de
 

@@ -18,10 +18,10 @@ class PDE(object):
     Parameters
     ----------
 
-    fe_space : pysofe_light.spaces.space.FESpace
+    fe_space : pysofe.spaces.space.FESpace
         The function space of the pde
 
-    bc : pysofe_light.pde.conditions.BoundaryCondition, iterable
+    bc : pysofe.pde.conditions.BoundaryCondition, iterable
         The boundary condition(s)
     """
 

@@ -6,4 +6,5 @@ partial differential equations.
 import conditions
 import poisson
 
+from .conditions import DirichletBC
 from .poisson import Poisson

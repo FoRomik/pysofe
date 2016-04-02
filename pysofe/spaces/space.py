@@ -23,10 +23,10 @@ class FESpace(DOFManager):
     Parameters
     ----------
 
-    mesh : pysofe_light.meshes.mesh.Mesh
+    mesh : pysofe.meshes.mesh.Mesh
         The mesh used for approximating the pde domain
 
-    element : pysofe_light.elements.base.Element
+    element : pysofe.elements.base.Element
         The reference element
     """
 

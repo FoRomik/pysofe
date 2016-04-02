@@ -11,3 +11,4 @@
    space
    manager
    operators
+   functions

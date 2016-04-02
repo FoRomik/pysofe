@@ -47,7 +47,8 @@ Source
 ------
 
 If would like to install |PySOFE| from the source code files please
-download the latest release from `here (TODO: INSERT LINK)`. After the
+download the latest release from `here
+<https://github.com/and2345/pysofe/tree/master/dist>`_. After the
 download is complete open the archive and change directory into the
 extracted folder. Then run the following command::
 
@@ -73,28 +74,29 @@ Consider the linear *Poisson* equation on the unit square in 2D with homogeneous
    \end{align*}
 
 with the constant coefficient :math:`a` and the right hand site
-:math:`f \in L^2(\Omega)`. To keep things simple let :math:`a = 1` and define
-:math:`f(x) = x_0 + x_1` where :math:`x = (x_0,x_1)\in\Omega\subset\mathbb{R}^2`.
+:math:`f \in L^2(\Omega)`. To keep things simple let :math:`a = 1` and
+define :math:`f(x) = x_0^2 - x_1^2` where :math:`x =
+(x_0,x_1)\in\Omega\subset\mathbb{R}^2`.
 
 First, we create the mesh that discretizes the spatial domain :math:`\Omega`
 of our problem. To do so we import the predefined class |UnitSquareMesh| and
 instantiate a mesh with :math:`100` nodes on each axis ::
 
-  >>> from pysofe.meshes import UnitSquareMesh
+  >>> from pysofe import UnitSquareMesh
   >>> mesh = UnitSquareMesh(100, 100)
 
 Then, we create the reference element that provides the basis functions. We
 will use linear basis functions on triangles, implemented in the class
 |P1| which takes the spatial dimension of our problem as an argument ::
 
-  >>> from pysofe.elements import P1
+  >>> from pysofe import P1
   >>> element = P1(dimension=2)
 
 Next, we create the function space in which we look for a solution. We do this
 by creating an instance of the |FESpace| class that brings together the mesh and
 reference element ::
 
-  >>> from pysofe.spaces import FESpace
+  >>> from pysofe import FESpace
   >>> fe_space = FESpace(mesh, element)
 
 For the formulation of our problem we also need to specify boundary conditions
@@ -123,7 +125,7 @@ suffices to define this function as a constant ::
 Now, we can create the boundary condition implemented in the |DirichletBC|
 class and pass the arguments defined above ::
 
-  >>> from pysofe.pde import DirichletBC
+  >>> from pysofe import DirichletBC
   >>> dirichlet_bc = DirichletBC(fe_space, dirichlet_domain, g)
 
 What remains is to define the actual boundary value problem. Therefore, we will
@@ -137,12 +139,12 @@ can simply do so in the code as well ::
 and we define the right hand site as ::
 
   >>> def f(x):
-  ...     return x[0] + x[1]
+  ...     return x[0]*x[0] - x[1]*x[1]
 
 So, now we have all things we need to create the object that represent our
 boundary value problem ::
 
-  >>> from pysofe.pde import Poisson
+  >>> from pysofe import Poisson
   >>> pde = Poisson(fe_space, a, f, dirichlet_bc)
 
 Finally, to solve it we call ::
@@ -157,4 +159,4 @@ and can be visualized with ::
 
 which should produce the following graphics.
 
-.. .. image:: /pics/usage_example_solution.png
+.. image:: /pics/usage_example_solution.png

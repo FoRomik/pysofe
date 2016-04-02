@@ -19,7 +19,7 @@ class BoundaryCondition(object):
     Parameters
     ----------
 
-    fe_space : pysofe_light.spaces.space.FESpace
+    fe_space : pysofe.spaces.space.FESpace
         The considered function space
 
     domain : callable
@@ -49,7 +49,7 @@ class DirichletBC(BoundaryCondition):
     Parameters
     ----------
     
-    fe_space : pysofe_light.spaces.space.FESpace
+    fe_space : pysofe.spaces.space.FESpace
         The considered function space
 
     domain : callable

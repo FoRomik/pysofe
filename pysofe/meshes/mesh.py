@@ -20,7 +20,7 @@ class Mesh(object):
 
     Basically clues together the MeshGeometry and MeshTopology
     classes and provides interfaces for mesh refinement and
-    global point search.
+    function evaluation.
 
     Parameters
     ----------
@@ -174,7 +174,7 @@ class Mesh(object):
         -------
 
         numpy.ndarray
-            nE x nP [x nD [x nD]]
+            nE x nP [x ...]
         """
 
         # first we need the global counterparts to the given local points
