@@ -27,3 +27,4 @@ License
 =======
 
 |PySOFE| is published under the BSD license.
+
