@@ -21,5 +21,5 @@ the :ref:`Modules Reference <modules>`.
    getting_started
    tutorial/index
    examples/index
-   
+   changelog
    
