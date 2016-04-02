@@ -11,7 +11,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 def read(*filenames, **kwargs):
     encoding = kwargs.get('encoding', 'utf-8')
-    sep = kwargs.get('sep', os.linesep)
+    linesep = kwargs.get('sep', os.linesep)
     buf = []
     for filename in filenames:
         with io.open(filename, encoding=encoding) as f:
@@ -46,6 +46,7 @@ setup(
     extras_require={
         'testing': ['pytest'],
         'visualization' : ['matplotlib>=1.5.1'],
+        },
     cmdclass={'test': PyTest},
     author_email='andreas.kunze@mailbox.tu-dresden.de',
     description='Finite element method software package for solving partial differential equations in 1D, 2D and 3D',
@@ -64,5 +65,4 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         ],
-    }
 )
