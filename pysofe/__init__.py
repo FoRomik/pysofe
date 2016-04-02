@@ -9,7 +9,7 @@ in python.
 """
 
 # current version
-__version__ = '0.1'
+__version__ = '0.1.0'
 
 import elements
 import meshes
