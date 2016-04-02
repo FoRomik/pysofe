@@ -1,0 +1,20 @@
+# choose programming language
+language: python
+
+# which version
+python:
+  - "2.7"
+
+# install dependencies
+install:
+  - "pip install -r requirements.txt"
+  - "pip install coverage"
+  - "pip install coveralls"
+
+# command to run tests
+script:
+#  - "py.test test/"
+  - "coverage run --source=pysofe setup.py test"
+
+after_success:
+  - "coveralls"

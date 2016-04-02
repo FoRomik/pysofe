@@ -1,0 +1,23 @@
+# hard dependencies
+# =================
+# numpy>=1.10.4
+# scipy>=0.17.0
+
+# optional dependencies
+# =====================
+# visualization
+# -------------
+# matplotlib>=1.5.1
+#
+# testing
+# -------
+# pytest
+#
+# documentation
+# -------------
+# sphinx>=1.3
+# sphinxcontrib-tikz
+# sphinxcontrib-bibtex
+
+# use those specified in setup.py -> install_requires
+-e .
