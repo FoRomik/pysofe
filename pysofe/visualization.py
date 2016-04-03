@@ -18,7 +18,7 @@ from IPython import embed as IPS
 import numpy as np
 
 import pysofe
-from .utils import unique_rows, sub_grid_nodes
+from pysofe import utils
 
 def show(obj, *args, **kwargs):
     """
@@ -402,7 +402,7 @@ class FunctionVisualizer(Visualizer):
         # generate local points for the function evaluation
         n_sub_grid = kwargs.get('n_sub_grid', self.fnc.order + 1)
             
-        local_points = sub_grid_nodes(n=n_sub_grid)
+        local_points = utils.lagrange_nodes_triangle(order=n_sub_grid)
         
         # project them to their global counterparts
         order = 'C'
@@ -413,7 +413,7 @@ class FunctionVisualizer(Visualizer):
         points = np.vstack([points[:,:,0].ravel(order=order), points[:,:,1].ravel(order=order)])
 
         # get unique points indices
-        _, I = unique_rows(points.T, return_index=True)
+        _, I = utils.unique_rows(points.T, return_index=True)
         points = points.take(I, axis=1)
 
         # evaluate the function w.r.t the unique points

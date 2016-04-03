@@ -37,23 +37,42 @@ def unique_rows(A, return_index=False, return_inverse=False):
     else:
         return B.view(A.dtype).reshape((-1, A.shape[1]), order='C')
 
-def sub_grid_nodes(n):
-    '''
-    Returns the nodes of the sub grid triangles...???
+def lagrange_nodes_triangle(order):
+    """
+    Returns the nodes that determine the Lagrange shape functions of
+    given order on a triangle.
     
     Parameters
     ----------
 
-    n : int
-        Number of grid points on each edge
-    '''
+    order : int
+        The polynomial order of the shape functions
+    """
+    from IPython import embed as IPS
 
-    assert n >= 2
+    if order == 0:
+        nodes = np.array([[1/3.],
+                          [1/3.]])
+    elif order > 0:
+        # 3 vertices
+        vertex_nodes = np.array([[0., 1., 0.],
+                                 [0., 0., 1.]])
 
-    ls = np.linspace(0., 1., n)
-    x0, x1 = np.meshgrid(ls,ls)
+        # 3 * (p-1) edge nodes
+        points1d = np.linspace(0., 1., (order-1)+2)[1:-1]
 
-    nodes = np.vstack([x0.flat, x1.flat])
-    nodes = nodes.compress(nodes.sum(axis=0) <= 1., axis=1)
+        edge_nodes_1 = np.vstack([points1d, np.zeros_like(points1d)])
+        edge_nodes_2 = np.vstack([np.zeros_like(points1d), points1d])
+        edge_nodes_3 = np.vstack([points1d[::-1], points1d])
+
+        # (p-1)*(p-1) / 2 interior nodes
+        gridx, gridy = np.meshgrid(points1d, points1d)
+        grid = np.vstack([gridx.flat, gridy.flat])
+
+        interior_nodes = grid.compress(grid.sum(axis=0) < 1, axis=1)
+
+        nodes = np.hstack([vertex_nodes,
+                           edge_nodes_1, edge_nodes_2, edge_nodes_3,
+                           interior_nodes])
 
     return nodes
