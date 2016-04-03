@@ -24,7 +24,7 @@ given by `Dr. Lars Ludwig <http://www.math.tu-dresden.de/~ludwigl/>`_ at
 winter term 2014/15 and is based in parts on the Matlab framework |SOFE| he
 developped for his dissertation (:cite:`Ludwig13`).
 
-Although there are many similarities in the underlying concepts, |PySOFE| is
+Although the underlying concepts are similar, |PySOFE| is
 a separat project.
 
 .. _guide_contacts:
