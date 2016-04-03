@@ -223,7 +223,7 @@ class ElementVisualizer(Visualizer):
                 points = ls
 
         # evaluate all basis function at all points
-        basis = element.eval_basis(points, d=d)    # nB x nP
+        basis = element.eval_basis(points, deriv=d)    # nB x nP
 
         if indices is not None:
             assert hasattr(indices, '__iter__')
@@ -402,7 +402,7 @@ class FunctionVisualizer(Visualizer):
         # generate local points for the function evaluation
         n_sub_grid = kwargs.get('n_sub_grid', self.fnc.order + 1)
             
-        local_points = utils.lagrange_nodes_triangle(order=n_sub_grid)
+        local_points = utils.lagrange_nodes(dimension=2, order=n_sub_grid)
         
         # project them to their global counterparts
         order = 'C'

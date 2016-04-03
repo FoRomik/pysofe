@@ -17,10 +17,11 @@ mesh = Mesh(nodes, cells)
 mesh.refine(times=5)
 
 # create reference element
-p1_elem = P1(2)
+#element = P1(2)
+element = pysofe.elements.P2(2)
 
 # create fe space
-Vh = FESpace(mesh, p1_elem)
+Vh = FESpace(mesh, element)
 
 # define boundary conditions
 def dirichlet_domain(x):
