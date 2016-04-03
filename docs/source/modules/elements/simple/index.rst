@@ -3,8 +3,17 @@
 :mod:`elements.simple` Module
 =============================
 
-.. toctree::
-   :maxdepth: 2
+.. automodule:: pysofe.elements.simple
+   :members:
+   :member-order: bysource
 
-   lagrange
+
+.. _modules_elements_simple_lagrange:
+
+:mod:`elements.simple.lagrange` Module
+--------------------------------------
+
+.. automodule:: pysofe.elements.simple.lagrange
+   :members:
+   :member-order: bysource
    

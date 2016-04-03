@@ -19,7 +19,7 @@ import pde
 import utils
 import visualization
 
-from .elements import P1
+from .elements import P1, P2
 from .meshes import Mesh, UnitSquareMesh
 from .spaces import FESpace
 from .pde import Poisson, DirichletBC
