@@ -1,16 +1,14 @@
-.. include:: docs/source/macros.hrst
-
 About
 =====
 
-|PySOFE| is a Python software package for solving partial differential
+PySOFE is a Python software package for solving partial differential
  equations in 1D, 2D, and 3D using the finite element method.
 
 Installation
 ============
 
-|PySOFE| is hosted at the Python Packaging Index so you can simply
- install it by running::
+PySOFE is hosted at the Python Packaging Index so you can simply
+install it by running::
 
    $ pip install pysofe
 
@@ -26,5 +24,5 @@ The documentation can be found at
 License
 =======
 
-|PySOFE| is published under the BSD license.
+PySOFE is published under the BSD license.
 
