@@ -2,7 +2,7 @@ About
 =====
 
 PySOFE is a Python software package for solving partial differential
- equations in 1D, 2D, and 3D using the finite element method.
+equations in 1D, 2D, and 3D using the finite element method.
 
 Installation
 ============
