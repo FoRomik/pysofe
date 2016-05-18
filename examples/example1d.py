@@ -9,10 +9,9 @@ from pysofe.pde import Poisson
 from numpy import array, sin, pi, logical_or, where
 
 # create mesh
-nodes = array([[0.],[0.5],[0.75],[1.]])
-cells = array([[1,2],[2,3],[3,4]])
+nodes = array([[0.0], [0.25], [0.5], [0.75], [1.0]])
+cells = array([[1,2], [2,3], [3,4], [4,5]])
 mesh = Mesh(nodes, cells)
-mesh.refine(times=2)
 
 # create reference element
 p1_elem = P1(dimension=1)
@@ -27,10 +26,7 @@ def dirichlet_domain(x):
 dir_bc = DirichletBC(fes, dirichlet_domain, ud=0.)
 
 # define pde
-def p(x):
-    return where(x[0] < 0.5, 4., 0.)
-
-pde = Poisson(fe_space=fes, a=1, f=p, bc=dir_bc)
+pde = Poisson(fe_space=fes, a=1, f=1, bc=dir_bc)
 
 # solve it
 sol = pde.solve()
@@ -39,5 +35,8 @@ sol = pde.solve()
 from pysofe.spaces.functions import FEFunction
 u = FEFunction(fes, sol)
 
-from IPython import embed as IPS
-IPS()
+pysofe.show(u)
+raw_input("Press Enter to continue...")
+
+# from IPython import embed as IPS
+# IPS()
