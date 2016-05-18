@@ -37,23 +37,87 @@ def unique_rows(A, return_index=False, return_inverse=False):
     else:
         return B.view(A.dtype).reshape((-1, A.shape[1]), order='C')
 
-def sub_grid_nodes(n):
-    '''
-    Returns the nodes of the sub grid triangles...???
+def lagrange_nodes(dimension, order):
+    """
+    Returns the nodes that determine the Lagrange shape functions of
+    given order on a simplicial domain.
     
     Parameters
     ----------
 
-    n : int
-        Number of grid points on each edge
-    '''
+    dimension : int
+        The spatial dimension of the points
 
-    assert n >= 2
+    order : int
+        The polynomial order of the shape functions
+    """
+    assert dimension in {1, 2, 3}
+    assert order >= 0
+    
+    if dimension == 1:
+        if order == 0:
+            nodes = np.array([[1/3.]])
+        elif order > 0:
+            points1d = np.linspace(0., 1., order+1)
+            nodes = np.atleast_2d(np.hstack([points1d[0], points1d[-1],
+                                             points1d[1:-1]]))
+    elif dimension == 2:
+        if order == 0:
+            nodes = np.array([[1/3.],
+                              [1/3.]])
+        elif order > 0:
+            # 3 vertices
+            vertex_nodes = np.array([[0., 1., 0.],
+                                     [0., 0., 1.]])
+            
+            # 3 * (p-1) edge nodes
+            points1d = np.linspace(0., 1., (order-1)+2)[1:-1]
+            
+            edge_nodes_1 = np.vstack([points1d, np.zeros_like(points1d)])
+            edge_nodes_2 = np.vstack([np.zeros_like(points1d), points1d])
+            edge_nodes_3 = np.vstack([points1d[::-1], points1d])
+            
+            # (p-1)*(p-1) / 2 interior nodes
+            gridx, gridy = np.meshgrid(points1d, points1d)
+            grid = np.vstack([gridx.flat, gridy.flat])
+            
+            interior_nodes = grid.compress(grid.sum(axis=0) < 1, axis=1)
+            
+            nodes = np.hstack([vertex_nodes,
+                               edge_nodes_1, edge_nodes_2, edge_nodes_3,
+                               interior_nodes])
+    elif dimension == 3:
+        if order == 0:
+            nodes = np.array([[1/3.],
+                              [1/3.],
+                              [1/3.]])
+        elif order > 0:
+            # 4 vertices
+            vertex_nodes = np.array([[0., 1., 0., 0.],
+                                     [0., 0., 1., 0.],
+                                     [0., 0., 0., 1.]])
+            
+            # 6 * (p-1) edge nodes
+            points1d = np.linspace(0., 1., (order-1)+2)[1:-1]
+            zeros1d = np.zeros_like(points1d)
+            
+            edge_nodes_1 = np.vstack([points1d, zeros1d, zeros1d])
+            edge_nodes_2 = np.vstack([zeros1d, points1d, zeros1d])
+            edge_nodes_3 = np.vstack([zeros1d, zeros1d, points1d])
+            edge_nodes_4 = np.vstack([points1d[::-1], points1d, zeros1d])
+            edge_nodes_5 = np.vstack([points1d[::-1], zeros1d, points1d])
+            edge_nodes_6 = np.vstack([zeros1d, points1d[::-1], points1d])
+            
+            # (p-1)*(p-2)*(p-3) / 3 interior nodes
+            gridx, gridy, gridz = np.meshgrid(points1d, points1d, points1d)
+            grid = np.vstack([gridx.flat, gridy.flat, gridz.flat])
+            
+            interior_nodes = grid.compress(grid.sum(axis=0) < 1, axis=1)
+            
+            nodes = np.hstack([vertex_nodes,
+                               edge_nodes_1, edge_nodes_2, edge_nodes_3,
+                               edge_nodes_4, edge_nodes_5, edge_nodes_6,
+                               interior_nodes])
 
-    ls = np.linspace(0., 1., n)
-    x0, x1 = np.meshgrid(ls,ls)
-
-    nodes = np.vstack([x0.flat, x1.flat])
-    nodes = nodes.compress(nodes.sum(axis=0) <= 1., axis=1)
-
+    
     return nodes

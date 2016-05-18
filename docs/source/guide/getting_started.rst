@@ -46,8 +46,8 @@ in a terminal, provided that you have installed the Python module `pip
 Source
 ------
 
-If would like to install |PySOFE| from the source code files please
-download the latest release from `here
+If you would like to install |PySOFE| from the source files
+please download the latest release from `here
 <https://github.com/and2345/pysofe/tree/master/dist>`_. After the
 download is complete open the archive and change directory into the
 extracted folder. Then run the following command::

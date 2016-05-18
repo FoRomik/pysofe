@@ -1,13 +1,13 @@
 Change Log
 ==========
 
-Unreleased
-++++++++++
+Release 0.1.0
++++++++++++++
 
 Added
 -----
 
-- Linear Lagrange element P1
+- Lagrange elements P1, P2
 - Basic mesh data structures and uniform refinement method
 - Gauss-Legendre quadrature for simplicial domains
 - FE space class

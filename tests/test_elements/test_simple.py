@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from pysofe import elements
+from pysofe import utils
 
 simplicial_vertices = dict()
 simplicial_vertices[1] = np.array([[0., 1.]])
@@ -98,3 +99,44 @@ class TestLagrangeP1(object):
         if failed:
             msg = '{} D2 evaluation failed, dimensions: ({})'.format(nerr, failed)
             pytest.fail(msg)
+
+class TestLagrangeP2(object):
+    elem = elements.simple.lagrange.P2(dimension=3)
+    
+    def test_specs(self):
+        assert self.elem.dimension == 3
+        assert self.elem.n_verts == (1, 2, 3, 4)
+        assert self.elem.order == 2
+        assert self.elem.n_basis == (1, 3, 6, 10)
+        assert self.elem.dof_tuple == (1, 1, 0, 0)
+
+    def test_eval_d0basis(self):
+        nerr = 0
+        failed = []
+        
+        for dim in xrange(1, self.elem.dimension + 1):
+            try:
+                lagrange_points = utils.lagrange_nodes(dim, 2)
+                basis = self.elem.eval_basis(points=lagrange_points,
+                                             deriv=0)
+
+                nB = self.elem.n_basis[dim]
+                nP = lagrange_points.shape[1]
+
+                assert basis.shape == (nB, nP)
+                assert np.allclose(basis, np.eye(nB))
+            except AssertionError:
+                failed.append(dim)
+                nerr += 1
+
+        if failed:
+            msg = '{} D0 evaluation failed, dimensions: ({})'.format(nerr, failed)
+            pytest.fail(msg)
+
+    @pytest.mark.xfail(reason='Not implemented...')
+    def test_eval_d1basis(self):
+        raise NotImplementedError()
+
+    @pytest.mark.xfail(reason='Not implemented...')
+    def test_eval_d2basis(self):
+        raise NotImplementedError()

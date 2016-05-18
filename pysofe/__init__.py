@@ -9,7 +9,7 @@ in python.
 """
 
 # current version
-__version__ = '0.1'
+__version__ = '0.1.0'
 
 import elements
 import meshes
@@ -19,7 +19,7 @@ import pde
 import utils
 import visualization
 
-from .elements import P1
+from .elements import P1, P2
 from .meshes import Mesh, UnitSquareMesh
 from .spaces import FESpace
 from .pde import Poisson, DirichletBC

@@ -5,13 +5,13 @@
 About Py\ **SOFE**
 ==================
 
-|PySOFE| is Python software package for solving partial differential equations
-using the finite element method in 1D, 2D or 3D.
+|PySOFE| is a Python software package for solving partial differential
+equations using the finite element method in 1D, 2D or 3D.
 
 Furthermore, the aim of this project is to provide background
 information on both the theoretical and implementational aspects of
 the finite element method. It is intended to serve as a starting point
-for people, who are interested in the finite element method and
+for people who are interested in the finite element method and
 especially its implementation.
 
 .. The acronym :math:`\mathbb{SOFE}` is short for **S**\ imple and
@@ -24,8 +24,8 @@ given by `Dr. Lars Ludwig <http://www.math.tu-dresden.de/~ludwigl/>`_ at
 winter term 2014/15 and is based in parts on the Matlab framework |SOFE| he
 developped for his dissertation (:cite:`Ludwig13`).
 
-Although there are many similarities in the underlying concepts, |PySOFE| is
-a separat project.
+Although the underlying concepts are similar, |PySOFE| is
+a separate project.
 
 .. _guide_contacts:
 
@@ -44,3 +44,4 @@ License
 |PySOFE| is published under the BSD license.
 
 .. literalinclude:: /../../LICENSE
+   :language: none
