@@ -436,21 +436,23 @@ Computing Incidence Relations
 
 Now that we have the algorithms *build*, *transpose* and *intersection*
 we can construct the incidence matrix for any relation :math:`d \to d'`
-by a combination of those algorithms as follows::
+by a combination of those algorithms as follows
 
-  Compute relation (d -> d')
-  --------------------------
+.. code-block:: none
+
+   Compute relation (d -> d')
+   --------------------------
   
-      if relation (d -> 0) does not exist
-          build relation (d -> 0)
+   if relation (d -> 0) does not exist
+      build relation (d -> 0)
 
-      if relation (d' -> 0) does not exist
-          build relation (d' -> 0)
+   if relation (d' -> 0) does not exist
+      build relation (d' -> 0)
 
-      if d < d'
-          compute relation (d' -> d)
-	  transpose relation (d' -> d)
-      else
-          intersect relation (d -> dd)
+   if d < d'
+      compute relation (d' -> d)
+      transpose relation (d' -> d)
+   else
+      intersect relation (d -> dd)
 
 

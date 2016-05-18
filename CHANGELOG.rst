@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-Unreleased
-++++++++++
+Release 0.1.0
++++++++++++++
 
 Added
 -----

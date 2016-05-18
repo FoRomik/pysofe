@@ -40,7 +40,7 @@ setup(
     license='BSD License',
     author='Andreas Kunze',
     install_requires=['numpy>=1.10.4',
-                    'scipy>=0.17.0',
+                    'scipy>=0.16.1',
                     ],
     tests_require=['pytest'],
     extras_require={
