@@ -1,4 +1,4 @@
-.. include:: doc/source/macros.hrst
+.. include:: docs/source/macros.hrst
 
 About
 =====
