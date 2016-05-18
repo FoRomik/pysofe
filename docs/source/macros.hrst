@@ -1,0 +1,31 @@
+.. |PySOFE| replace:: Py\ :math:`\small\mathbb{SOFE}`\
+.. |SOFE| replace:: :math:`\small\mathbb{SOFE}`\ 
+
+
+.. meshes
+   ------
+   
+.. |Mesh| replace:: :py:class:`Mesh <pysofe.meshes.mesh.Mesh>`
+.. |MeshGeometry| replace:: :py:class:`MeshGeometry <pysofe.meshes.geometry.MeshGeometry>`
+.. |MeshTopology| replace:: :py:class:`MeshTopology <pysofe.meshes.topology.MeshTopology>`
+.. |ReferenceMap| replace:: :py:class:`ReferenceMap <pysofe.meshes.reference_map.ReferenceMap>`
+.. |UnitSquareMesh| replace:: :py:class:`UnitSquareMesh <pysofe.meshes.mesh.UnitSquareMesh>`
+
+
+.. elements
+   --------
+
+.. |P1| replace:: :py:class:`P1 <pysofe.elements.simple.lagrange.P1>`
+
+
+.. spaces
+   ------
+
+.. |FESpace| replace:: :py:class:`FESpace <pysofe.spaces.space.FESpace>`
+
+
+.. pde
+   ---
+
+.. |DirichletBC| replace:: :py:class:`DirichletBC <pysofe.pde.conditions.DirichletBC>`
+.. |Poisson| replace:: :py:class:`Poisson <pysofe.pde.poisson.Poisson>`
