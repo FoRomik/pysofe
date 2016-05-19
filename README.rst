@@ -1,11 +1,13 @@
-.. image:: https://travis-ci.org/pysofe/pysofe.svg?branch=master
-    :target: https://travis-ci.org/pysofe/pysofe
+.. image:: https://img.shields.io/travis/pysofe/pysofe/master.svg
+   :target: https://travis-ci.org/pysofe/pysofe
 
-.. image:: https://coveralls.io/repos/github/pysofe/pysofe/badge.svg?branch=master
-   :target: https://coveralls.io/github/pysofe/pysofe?branch=master
+.. image:: https://img.shields.io/coveralls/pysofe/pysofe.svg
+   :target: https://coveralls.io/r/pysofe/pysofe
+   :alt: test coverage
 
-
-
+.. image:: https://img.shields.io/pypi/v/pysofe.svg
+   :target: https://pypi.python.org/pypi/pysofe
+	     
 About
 =====
 
@@ -27,7 +29,7 @@ Documentation
 =============
 
 The documentation can be found at
-`readthedocs.org <https://pysofe.readthedocs.org>`_.
+`readthedocs.org <http://pysofe.rtfd.io>`_.
 
 License
 =======
