@@ -214,3 +214,17 @@ pseudoxml:
 	$(SPHINXBUILD) -b pseudoxml $(ALLSPHINXOPTS) $(BUILDDIR)/pseudoxml
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
+
+################
+# User defined #
+################
+
+ZEALDIR = /home/andreas/.local/share/Zeal/Zeal/docsets
+
+.PHONY: docset
+docset:
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+	doc2dash -f -d $(ZEALDIR) -n pysofe -i source/pics/pysofe_logo.png $(BUILDDIR)/html
+	@echo "Build finished. The docset is in $(ZEALDIR)/pysofe.docset"

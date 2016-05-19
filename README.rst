@@ -36,3 +36,9 @@ License
 
 PySOFE is published under the BSD license.
 
+Credits
+=======
+
+The icon in the logo of PySOFE was made by
+`Freepik <http://www.freepik.com>`_ from
+`www.flaticon.com <http://www.flaticon.com>`_.
