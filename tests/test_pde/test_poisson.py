@@ -24,7 +24,7 @@ class TestPoisson1D(object):
 
     dir_bc = pysofe.pde.conditions.DirichletBC(fe_space=fes_1d,
                                                domain=dir_domain,
-                                               ud=1.)
+                                               g=1.)
 
     pde = pysofe.pde.poisson.Poisson(fe_space=fes_1d, a=1., f=0., bc=dir_bc)
 
@@ -51,7 +51,7 @@ class TestPoisson2D(object):
 
     dir_bc = pysofe.pde.conditions.DirichletBC(fe_space=fes_2d,
                                                domain=dir_domain,
-                                               ud=1.)
+                                               g=1.)
 
     pde = pysofe.pde.poisson.Poisson(fe_space=fes_2d, a=1., f=0., bc=dir_bc)
 
@@ -81,7 +81,7 @@ class TestPoisson3D(object):
 
     dir_bc = pysofe.pde.conditions.DirichletBC(fe_space=fes_3d,
                                                domain=dir_domain,
-                                               ud=1.)
+                                               g=1.)
 
     pde = pysofe.pde.poisson.Poisson(fe_space=fes_3d, a=1., f=0., bc=dir_bc)
 

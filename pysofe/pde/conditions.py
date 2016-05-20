@@ -56,14 +56,14 @@ class DirichletBC(BoundaryCondition):
         A function specifying the boundary part where
         the condition should hold
     
-    ud : callable
+    g : callable
         A function specifying the values at the boundary
     """
 
-    def __init__(self, fe_space, domain, ud=0.):
+    def __init__(self, fe_space, domain, g=0):
         BoundaryCondition.__init__(self, fe_space, domain)
 
-        self.ud = ud
+        self.g = g
 
     def apply(self, A=None, b=None):
         # first we need to know the boundary facets
@@ -88,7 +88,7 @@ class DirichletBC(BoundaryCondition):
 
         # set the corresponding load vector entries as the
         # l2 projection of the boundary function
-        l2_proj = L2Projection.project(fnc=self.ud,
+        l2_proj = L2Projection.project(fnc=self.g,
                                        fe_space=self.fe_space,
                                        codim=1,
                                        mask=None)
@@ -96,3 +96,53 @@ class DirichletBC(BoundaryCondition):
         b[dir_dof_ind] = l2_proj[dir_dof_ind, None]
 
         return A, b
+
+class NeumannBC(BoundaryCondition):
+    r"""
+    Represents Neumann boundary conditions of the form
+
+    .. math::
+       \frac{\partial u}{\partial n} = h|_{\Gamma_{N}\subseteq\partial\Omega}
+
+    where :math:`n` denotes the outer unit normal on :math:`\Gamma_{N}`.
+
+    Parameters
+    ----------
+
+    fe_space : pysofe.spaces.space.FESpace
+        The considered function space
+
+    domain : callable
+        A function specifying the boundary part where
+        the condition should hold
+    
+    h : callable
+        A function specifying the values at the boundary
+    """
+
+    def __init__(self, fe_space, domain, h=0):
+        BoundaryCondition.__init__(self, fe_space, domain)
+
+        self.h = h
+
+    def apply(self, A=None, b=None):
+        if b is not None:
+            # first we need to know the boundary facets
+            location_mask = self.fe_space.mesh.boundary(fnc=self.domain)
+
+            # then we need the dofs that are associated with those entities
+            dim = self.fe_space.mesh.dimension - 1
+            neu_dof_mask = self.fe_space.extract_dofs(d=dim, mask=location_mask)
+            neu_dof_ind = neu_dof_mask.nonzero()[0]
+            
+            # add the l2 projection of the boundary function
+            # to the corresponding load vector entries
+            l2_proj = L2Projection.project(fnc=self.h,
+                                           fe_space=self.fe_space,
+                                           codim=1,
+                                           mask=None)
+            
+            b[neu_dof_ind] += l2_proj[neu_dof_ind, None]
+
+        return A, b
+
