@@ -321,6 +321,8 @@ class FunctionVisualizer(Visualizer):
         else:
             raise NotImplementedError()
 
+        kwargs.pop('mode', None)
+
         # get visualization data
         #----------------------------------------------------
         points, values, cells = self._get_visualizetion_data(mode, **kwargs)
@@ -602,10 +604,13 @@ class FESpaceVisualizer(Visualizer):
         dof_tuple = fe_space.element.dof_tuple
         n_dof_per_dim = np.asarray(n_entities) * dof_tuple
 
+        # calc max dof index for each topological dimension
+        max_dof_inds = n_dof_per_dim.cumsum()[:-1]
+        
         dofs = np.arange(fe_space.n_dof) + 1
         entity_dofs = [zip(*(arr.reshape((dof_tuple[i], -1))))
-                       for i, arr in
-                       enumerate(np.split(dofs, n_dof_per_dim.cumsum()[:-1]))]
+                       for i, arr in enumerate(np.split(dofs, max_dof_inds))]
+                       #if arr.size > 1]
 
         # plot dofs for each topological dimension
         
@@ -639,8 +644,5 @@ class FESpaceVisualizer(Visualizer):
             for i in xrange(cells.shape[0]):
                 axes.text(x=bary[i,0], y=bary[i,1], s=entity_dofs[2][i],
                           color='red', fontsize=fontsize)
-
-
-                
 
         return fig, axes

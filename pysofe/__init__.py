@@ -21,6 +21,6 @@ import visualization
 
 from .elements import P1, P2
 from .meshes import Mesh, UnitSquareMesh
-from .spaces import FESpace
+from .spaces import FESpace, FEFunction
 from .pde import Poisson, DirichletBC
 from .visualization import show
