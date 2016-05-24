@@ -5,5 +5,7 @@ functionals and operators on them.
 
 import space
 import manager
+import functions
 
 from .space import FESpace
+from .functions import FEFunction

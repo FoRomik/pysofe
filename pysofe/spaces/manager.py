@@ -85,10 +85,11 @@ class DOFManager(object):
         
         return dof_map
 
-    def extract_dofs(self, d, mask=None):
+    def extract_dofs(self, d, mask=None, return_indices=False):
         """
-        Returns a boolean array specifying the degrees of freedom 
-        associated with the mesh entities of topological dimension `d`.
+        Returns an index or boolean (default) array specifying the degrees
+        of freedom associated with the mesh entities of topological
+        dimension `d`.
 
         Parameters
         ----------
@@ -98,14 +99,20 @@ class DOFManager(object):
 
         mask : array_like
             An 1d array marking certain entities of which to get the dofs
+
+        return_indices : bool
+            Whether to return an index array or not
         """
 
         # first we need the dof map
         dof_map = self.get_dof_map(d, mask)
         n_dof = self.n_dof
 
-        # remove duplicates and dofs mapped to `0`
-        dofs = np.unique(dof_map)
+        # remove duplicates but preserve the order of the dofs
+        dofs, index = np.unique(dof_map, return_index=True)
+        dofs = dofs.take(index.argsort())
+
+        # remove dofs mapped to `0`
         dofs = np.setdiff1d(dofs, 0)
 
         # build array using coo sparse matrix capabilities
@@ -117,6 +124,9 @@ class DOFManager(object):
 
         # turn it into an 1d array
         dofs = dofs.toarray().ravel()
+
+        if return_indices:
+            dofs = dofs.nonzero()[0] + 1
         
         return dofs
 

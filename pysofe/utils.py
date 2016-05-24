@@ -28,8 +28,8 @@ def unique_rows(A, return_index=False, return_inverse=False):
     assert A.ndim == 2, "Input array must be 2-dimensional"
 
     B = np.unique(A.view([('', A.dtype)]*A.shape[1]),
-               return_index=return_index,
-               return_inverse=return_inverse)
+                  return_index=return_index,
+                  return_inverse=return_inverse)
 
     if return_index or return_inverse:
         return (B[0].view(A.dtype).reshape((-1, A.shape[1]), order='C'),) \
@@ -121,3 +121,31 @@ def lagrange_nodes(dimension, order):
 
     
     return nodes
+
+def match_nodes(nodes0, nodes1, dim=0):
+    """
+    Determines index sets `I, J` such that
+    `nodes0[I, d] == nodes1[J, d] for each d != dim`.
+    """
+
+    # check input
+    if not nodes0.shape == nodes1.shape:
+        err_msg = "Incompatible shapes {} == {}"
+        raise ValueError(err_msg.format(nodes0.shape, nodes1.shape))
+
+    if not nodes0.shape[1] > 1:
+        raise ValueError("Nodes have to be at least 2-dimensional!")
+
+    # get dimensions to check
+    check = [d for d in xrange(np.size(nodes0, axis=1)) if d != dim]
+
+    nodesI = nodes0.take(check, axis=1)
+    nodesJ = nodes1.take(check, axis=1)
+
+    I = np.lexsort(nodesI.T)
+    J = np.lexsort(nodesJ.T)
+
+    if not np.allclose(nodesI.take(I, axis=0), nodesJ.take(J, axis=0)):
+        raise RuntimeError("Cannot match nodes along axis {}".format(axis))
+
+    return I, J
