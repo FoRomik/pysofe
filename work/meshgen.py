@@ -14,9 +14,12 @@ sdf4 = DRectangle()
 #sdf = DIntersection(sdf0, sdf1)
 #sdf = DDifference(sdf0, sdf1)
 #sdf = DDifference(sdf2, sdf0)
-sdf = DUnion(sdf4, sdf2)
+#sdf = DUnion(sdf4, sdf2)
 
-elf = uniform_edge_lengths
+#elf = uniform_edge_lengths
+
+sdf = DCircle()
+elf = lambda x: 0.1 - sdf(x)
 
 mg = MeshGenerator(sdf, elf)
 
