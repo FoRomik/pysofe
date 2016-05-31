@@ -3,7 +3,11 @@ Provides some auxilliary functions that are used in various
 points in the software.
 """
 
+# IMPORTS
 import numpy as np
+
+# DEBUGGING
+from IPython import embed as IPS
 
 def unique_rows(A, return_index=False, return_inverse=False):
     """
@@ -15,7 +19,7 @@ def unique_rows(A, return_index=False, return_inverse=False):
     ----------
 
     A : numpy.ndarray
-        The 2d array for which to determine the unique rows
+        The 2d array of which to determine the unique rows
 
     return_index : bool
         Whether to return `I`
@@ -149,3 +153,55 @@ def match_nodes(nodes0, nodes1, dim=0):
         raise RuntimeError("Cannot match nodes along axis {}".format(axis))
 
     return I, J
+
+def int2bool(arr, size=None):
+    """
+    Turns an integer index array into a boolean mask.
+
+    Parameters
+    ----------
+
+    arr : array_like
+        The 1d array with the indices of the later `True` values
+
+    size : int
+        The size of the boolean mask, if `None` the maximum
+        integer index will be used
+    """
+
+    # make sure input is valid
+    if not isinstance(arr, np.ndarray):
+        arr = np.asarray(arr, dtype='int')
+
+    assert arr.ndim == 1
+
+    if size is None:
+        size = arr.max()
+        
+    # allocate space
+    mask = np.zeros(size, dtype=bool)
+
+    mask[arr] = True
+
+    return mask
+
+def bool2int(mask):
+    """
+    Returns the indices of the nonzero entries in the given 1D boolean mask.
+
+    Parameters
+    ----------
+
+    mask : array_like
+        The boolean mask
+    """
+
+    # check input
+    if not isinstance(mask, np.ndarray):
+        mask = np.asarray(mask, dtype=bool)
+
+    assert mask.ndim == 1
+    assert mask.dtype == bool
+    
+    return mask.nonzero()[0]
+
