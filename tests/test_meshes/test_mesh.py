@@ -148,3 +148,12 @@ class TestMesh2D(object):
         nP = local_points_2d.shape[1]
         
         assert np.allclose(values, np.ones((nE, nP, 2, 2)))
+
+    def test_search_global_barycentres(self):
+        bary = self.mesh.nodes.take(self.mesh.cells-1, axis=0).mean(axis=1)
+        nE = self.mesh.cells.shape[0]
+
+        cells, preimages = self.mesh.search(points=bary.T, return_preimage=True)
+
+        assert np.allclose(cells, 1 + np.arange(nE))
+        assert np.allclose(preimages, 1/3. * np.ones((2, nE)))

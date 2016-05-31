@@ -29,7 +29,7 @@ class ReferenceMap(object):
         # hence linear shape element
         self._shape_elem = P1(dimension=mesh.dimension)
 
-    def eval(self, points, deriv=0):
+    def eval(self, points, deriv=0, mask=None):
         """
         Evaluates each member of the family of reference maps
         or their derivatives at given local points.
@@ -50,6 +50,10 @@ class ReferenceMap(object):
         
         deriv : int
             The derivation order
+
+        mask : array_like
+            Integer or boolean mask specifying certain elements
+            of which to evaluate the reference maps
 
         Returns
         -------
@@ -80,6 +84,19 @@ class ReferenceMap(object):
         # get the coordinates of all the entities' vertices
         coords = self._mesh.nodes.take(vertices - 1, axis=0)    # nE x nB x nD
 
+        if mask is not None:
+            if not isinstance(mask, np.ndarray):
+                mask = np.asarray(mask)
+
+            assert mask.ndim == 1
+
+            if mask.dtype == 'int':
+                coords = coords.take(mask, axis=0)
+            elif mask.dtype == bool:
+                coords = coords.compress(mask, axis=0)
+            else:
+                raise TypeError("Invalue mask type ({})".format(mask.dtype))
+
         if deriv == 0:
             # basis: nB x nP
             maps = (coords[:,:,None,:] * basis[None,:,:,None]).sum(axis=1)
@@ -107,9 +124,45 @@ class ReferenceMap(object):
             The host element for each of the global points
         """
 
-        raise NotImplementedError()
+        dim = np.size(points, axis=0)
+        
+        if not self._shape_elem.order == 1:
+            raise ValueError("Inversion only available for linear reference maps!")
 
-    def jacobian_inverse(self, points):
+        if not self._mesh.dimension in (1, 2):
+            raise ValueError("Inversion only available for 1D/2D case")
+        else:
+            assert dim == self._mesh.dimension
+
+        # if the mesh consists of straight sided cells
+        # the reference maps are affine linear and their
+        # inversion is simple to calculate
+        
+        # get coords of first vertex for every cell
+        coords = self._mesh.nodes.take(hosts-1, axis=0)
+        p0 = coords.take(0, axis=1)
+        
+        # get edge vectors
+        if dim == 1:
+            P = coords[:,1] - coords[:,0]
+            P_inv = 1./P
+
+            preimages = np.atleast_2d(P_inv * (points.T - p0))
+        elif dim == 2:
+            p10 = coords[:,1] - coords[:,0]
+            p20 = coords[:,2] - coords[:,0]
+        
+            P = np.dstack([p10, p20])
+        
+            P_inv = np.linalg.inv(P)
+        
+            preimages = (P_inv * (points.T - p0)[:,None,:]).sum(axis=-1)
+
+        preimages = preimages.T
+
+        return preimages
+
+    def jacobian_inverse(self, points, mask=None):
         """
         Returns the inverse of the reference maps' jacobians 
         evaluated at given points.
@@ -119,10 +172,14 @@ class ReferenceMap(object):
 
         points : array_like
             The local points at which to evaluate the jacobians
+
+        mask : array_like
+            Integer or boolean mask specifying certain elements
+            of which to evaluate the inverse jacobians
         """
 
         # evaluate 1st derivative of every reference map
-        jacs = self.eval(points=points, deriv=1)
+        jacs = self.eval(points=points, deriv=1, mask=mask)
 
         if jacs.shape[-2:] in {(1,1), (2,2), (3,3)}:
             jacs_inv = np.linalg.inv(jacs)
@@ -133,7 +190,7 @@ class ReferenceMap(object):
 
         return jacs_inv
 
-    def jacobian_determinant(self, points):
+    def jacobian_determinant(self, points, mask=None):
         """
         Returns the determinants of the reference maps' jacobians 
         evaluated at given points.
@@ -143,11 +200,15 @@ class ReferenceMap(object):
 
         points : array_like
             The local points at which to compute the determinants
+
+        mask : array_like
+            Integer or boolean mask specifying certain elements
+            of which to evaluate the jacobian determinants
         """
 
         # first we need the jacobians of the reference maps
         # --> nE x nP x nD x nD
-        jacs = self.eval(points=points, deriv=1)
+        jacs = self.eval(points=points, deriv=1, mask=mask)
 
         if jacs.shape[-2:] in {(1,1), (2,2), (3,3)}:
             jacs_det = np.linalg.det(jacs)

@@ -11,6 +11,9 @@ from .geometry import MeshGeometry
 from .topology import MeshTopology
 from .reference_map import ReferenceMap
 
+# TODO: get rid of these dependencies
+from matplotlib.tri import Triangulation, TrapezoidMapTriFinder
+
 # DEBUGGING
 from IPython import embed as IPS
 
@@ -233,6 +236,75 @@ class Mesh(object):
 
         return values            # nE x nP x nD
         # return np.vstack(values) # (nE*nP) x nD
+
+    def search(self, points, return_preimage=True):
+        """
+        Determines for every given global query point its containing 
+        mesh cell.
+
+        If `return_preimage` is True (default) it also returns the
+        corresponding local points on the reference domain.
+
+        Parameters
+        ----------
+
+        points : array_like
+            The global query points
+
+        return_preimage : bool
+            Whether to return the corresponding local points 
+            on the reference domain
+        """
+
+        if not isinstance(points, np.ndarray):
+            points = np.asarray(points)
+
+        points = np.atleast_2d(points)
+
+        if not np.size(points, axis=0) in (1, 2):
+            raise ValueError("Point location only available for 1D/2D case.")
+
+        if np.size(points, axis=0) == 1:
+            start_points = self.nodes.take(self.cells[:,0]-1, axis=0)[:,0]
+            argsort = start_points.argsort()
+
+            indices = np.digitize(points[0], start_points[argsort])
+
+            cell_idx = argsort[indices-1]
+        elif np.size(points, axis=0) == 2:
+            # for now we use the trapezoidal map algorithm implemented
+            # in matplotlib to find the containing cells for the given
+            # query points
+            # 
+            # TODO: write own implementation of the algorithm
+            
+            # get node coordinates for matplotlib triangulation
+            X = self.nodes[:,0]
+            Y = self.nodes[:,1]
+            
+            # triangulation starts indexing from 0
+            triangles = self.cells - 1
+            
+            # create triangulation to get finder
+            T = Triangulation(X, Y, triangles)
+            
+            #finder = T.get_trifinder()
+            finder = TrapezoidMapTriFinder(T)
+            
+            # find containing cells
+            cell_idx = finder(points[0], points[1])
+            
+            del T, finder
+        
+        if return_preimage:
+            # compute preimages by inverting the reference maps
+            # of the containing cells
+            hosts = self.cells.take(cell_idx, axis=0)
+            preimages = self.ref_map.eval_inverse(points, hosts)
+
+            return cell_idx + 1, preimages
+        else:
+            return cell_idx + 1
 
 class UnitSquareMesh(Mesh):
     """
