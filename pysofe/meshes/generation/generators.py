@@ -274,8 +274,11 @@ class MeshGenerator(object):
             grads = np.vstack([(self.sdf((outside_nodes + dX[i]).T) - outside_dists) / (self.dx * h0)
                                for i in xrange(dim)])
 
+            grads2 = np.power(grads, 2).sum(axis=0)
+
             # project back
-            self.nodes[outside] -= (outside_dists * grads).T
+            #self.nodes[outside] -= (outside_dists * grads).T
+            self.nodes[outside] -= (outside_dists * grads / grads2).T
 
         return dists
 
@@ -322,7 +325,10 @@ class MeshGenerator(object):
         grads = np.vstack([(self.sdf_int((internal_nodes + dX[i]).T) - internal_dists) / (self.dx * h0)
                            for i in xrange(dim)])
 
-        self.nodes[umarked] -= (internal_dists * grads).T
+        grads2 = np.power(grads, 2).sum(axis=0)
+
+        #self.nodes[umarked] -= (internal_dists * grads).T
+        self.nodes[umarked] -= (internal_dists * grads / grads2).T
 
     def generate(self, h0, bbox=None, fixed_nodes=None):
         """

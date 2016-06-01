@@ -10,12 +10,13 @@ sdf_sphere = DSphere(centre=[0.5, 0.5], radius=0.25)
 sdf_rect = DRectangle0(xlim=[0,1], ylim=[0,1])
 
 uelf = uniform_edge_lengths
+delf = lambda p: 1 + 8 * np.abs(sdf_sphere(p))
 
 mg = MeshGenerator(sdf=sdf_rect,
                    elf=uelf)
 
 mgi = MeshGenerator(sdf=sdf_rect,
-                    elf=uelf,
+                    elf=delf,
                     sdf_int=sdf_sphere)
 
 IPS()
