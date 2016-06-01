@@ -29,9 +29,12 @@ class MeshGenerator(object):
 
     elf : callable
         The (relative) edge length function
+
+    sdf_int : callable
+        A signed distance function for internal boundaries
     """
 
-    def __init__(self, sdf, elf=None, **kwargs):
+    def __init__(self, sdf, elf=None, sdf_int=None, **kwargs):
         # set signed distance function and desired edge length function
         self.sdf = sdf
 
@@ -40,6 +43,8 @@ class MeshGenerator(object):
         else:
             self.elf = uniform_edge_lengths
 
+        self.sdf_int = sdf_int
+            
         # set some other method parameters
 
         # stopping tolerance for changes in nodes movement
@@ -274,6 +279,51 @@ class MeshGenerator(object):
 
         return dists
 
+    def _project_internal(self, h0):
+        """
+        Project points to internal boundaries.
+        """
+
+        if self.sdf_int is None:
+            # nothing to be done here
+            return
+
+        dim = self.nodes.shape[1]
+        
+        # get coordinates of edge endpoints
+        ep0 = self.nodes.take(self.edges[:,0], axis=0)
+        ep1 = self.nodes.take(self.edges[:,1], axis=0)
+        
+        # evaluate internal sdf for these points
+        dI0 = self.sdf_int(ep0.T)
+        dI1 = self.sdf_int(ep1.T)
+        
+        # determine those of opposite sign (crossing edges)
+        crossing = (np.sign(dI0) * np.sign(dI1) < 0)
+        
+        # determine endpoint closer to internal boundary
+        # for crossing edges
+        crossing_edges = self.edges.compress(crossing, axis=0)
+        dI0c = dI0.compress(crossing, axis=0)
+        dI1c = dI1.compress(crossing, axis=0)
+
+        dists_argmin = np.argmin([np.abs(dI0c), np.abs(dI1c)], axis=0)
+        
+        #marked = np.where(adI0c < adI1c, crossing_edges[:,0], crossing_edges[:,1])
+        marked = np.where(dists_argmin, crossing_edges[:,1], crossing_edges[:,0])
+        umarked, uindices = np.unique(marked, return_index=True)
+        
+        # project those nodes to internal boundary
+        internal_nodes = self.nodes.take(umarked, axis=0)
+        internal_dists = np.where(dists_argmin, dI1c, dI0c).take(uindices)
+
+        dX = self.dx * h0 * np.identity(dim)
+
+        grads = np.vstack([(self.sdf_int((internal_nodes + dX[i]).T) - internal_dists) / (self.dx * h0)
+                           for i in xrange(dim)])
+
+        self.nodes[umarked] -= (internal_dists * grads).T
+
     def generate(self, h0, bbox=None, fixed_nodes=None):
         """
         Generates the nodes and cells of the mesh.
@@ -323,7 +373,7 @@ class MeshGenerator(object):
 
         # add fixed nodes
         self.nodes = np.vstack([fixed_nodes, self.nodes])
-        
+
         # force retriangulation in first iteration
         self.old_nodes = np.inf
         
@@ -358,13 +408,19 @@ class MeshGenerator(object):
             # update node positions using Euler's method
             self.nodes += self.dt * forces
 
+            # find edges crossing internal boundaries and
+            # project closer endpoint to internal boundary
+            self._project_internal(h0)
+            
             # project nodes that moved outside the geometry
             # back on the boundary
             dists = self._project_back(h0)
 
             # check termination criterion
-            inside = (dists < -self.gtol * h0)
-            delta_nodes = np.sqrt(np.sum(self.dt * np.power(forces.compress(inside, axis=0), 2), axis=1))
+            #inside = (dists < -self.gtol * h0)
+            #delta_nodes = np.sqrt(np.sum(self.dt * np.power(forces.compress(inside, axis=0), 2), axis=1))
+            nodes_diff = np.abs(self.nodes - self.old_nodes)
+            delta_nodes = np.sqrt(np.power(nodes_diff, 2).sum(axis=1))
 
             if delta_nodes.max() < self.stol * h0:
                 break
@@ -376,7 +432,7 @@ class MeshGenerator(object):
                     print "DELTA: ", delta_nodes.max(), "({})".format(self.stol * h0)
                     IPS()
 
-        return self.nodes, self.simplices.astype('int')
+        return self.nodes, self.simplices.astype('int') + 1
 
 def uniform_edge_lengths(points):
     """
