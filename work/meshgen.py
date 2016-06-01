@@ -1,26 +1,21 @@
 from IPython import embed as IPS
 import matplotlib.pyplot as plt
 
+import numpy as np
+
 from pysofe.meshes.generation.distance_functions import *
 from pysofe.meshes.generation.generators import MeshGenerator, uniform_edge_lengths
 
-sdf0 = DSphere(centre=[0, 0], radius=1)
-sdf1 = DSphere(centre=[1, 0], radius=1)
-sdf2 = DOrthotope(limits=[(0.5,1.5), (0.5,1.5)])
-sdf3 = DCircle()
-sdf4 = DRectangle()
+sdf_sphere = DSphere(centre=[0.5, 0.5], radius=0.25)
+sdf_rect = DRectangle0(xlim=[0,1], ylim=[0,1])
 
-#sdf = DUnion(sdf0, sdf1)
-#sdf = DIntersection(sdf0, sdf1)
-#sdf = DDifference(sdf0, sdf1)
-#sdf = DDifference(sdf2, sdf0)
-#sdf = DUnion(sdf4, sdf2)
+uelf = uniform_edge_lengths
 
-#elf = uniform_edge_lengths
+mg = MeshGenerator(sdf=sdf_rect,
+                   elf=uelf)
 
-sdf = DCircle()
-elf = lambda x: 0.1 - sdf(x)
-
-mg = MeshGenerator(sdf, elf)
+mgi = MeshGenerator(sdf=sdf_rect,
+                    elf=uelf,
+                    sdf_int=sdf_sphere)
 
 IPS()

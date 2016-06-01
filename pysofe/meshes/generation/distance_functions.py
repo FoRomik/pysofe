@@ -143,8 +143,10 @@ class DSphere(SignedDistanceFunction):
     
 class DOrthotope(SignedDistanceFunction):
     """
-    Signed distance function for n-orthotope 
-    (or n-dimensional box).
+    Signed distance function for n-orthotope (n-dimensional box).
+
+    This signed distance function is inexact as it ignores the cornes
+    of the orthotope.
 
     Parameters
     ----------
@@ -196,6 +198,9 @@ class DRectangle(DOrthotope):
     """
     Signed distance function for a rectangle.
     
+    This signed distance function is inexact as it ignores the cornes
+    of the rectangle.
+
     Parameters
     ----------
 
@@ -211,3 +216,56 @@ class DRectangle(DOrthotope):
                         ylim])
         
         DOrthotope.__init__(self, limits=lim)
+
+class DRectangle0(SignedDistanceFunction):
+    """
+    Signed distance function for a rectangle.
+
+    Parameters
+    ----------
+
+    xlim : tuple
+        Limits on x-axis ([xmin, xmax])
+
+    ylim : tuple
+        Limits on y-axis ([ymin, ymax])
+    """
+
+    def __init__(self, xlim=(0, 1), ylim=(0, 1)):
+        limits = np.array([xlim,
+                           ylim])
+    
+        SignedDistanceFunction.__init__(self, bbox=limits)
+
+        self.limits = limits
+
+    def _evaluate(self, points):
+        x0, x1 = self.limits[0]
+        y0, y1 = self.limits[1]
+
+        d1 = y0 - points[1]
+        d2 = points[1] - y1
+        d3 = x0 - points[0]
+        d4 = points[0] - x1
+
+        d5 = np.sqrt(d1**2 + d3**2)
+        d6 = np.sqrt(d1**2 + d4**2)
+        d7 = np.sqrt(d2**2 + d3**2)
+        d8 = np.sqrt(d2**2 + d4**2)
+
+        min = np.minimum
+        d = -min(min(min(-d1, -d2), -d3), -d4)
+
+        ix = (d1 > 0) * (d3 > 0)
+        d[ix] = d5[ix]
+
+        ix = (d1 > 0) * (d4 > 0)
+        d[ix] = d6[ix]
+
+        ix = (d2 > 0) * (d3 > 0)
+        d[ix] = d7[ix]
+
+        ix = (d2 > 0) * (d4 > 0)
+        d[ix] = d8[ix]
+
+        return d
