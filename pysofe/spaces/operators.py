@@ -291,6 +291,50 @@ class Laplacian(Operator):
 
         return entries
 
+class RDiffusion(Operator):
+    """
+    Provides the discrete operator for 
+
+    .. math::
+       \\int_{\\Omega} q \\cdot \\nabla v
+
+    Parameters
+    ----------
+
+    fe_space : pysofe.spaces.FESpace
+        The finite element space the operator lives on
+    """
+
+    def __init__(self, fe_space, q=1.):
+        Operator.__init__(self, fe_space=fe_space)
+        self.q = q
+
+    def _compute_entries(self, codim=0):
+        dim = self.fe_space.mesh.dimension - codim
+
+        # get quadrature data for the integration
+        qpoints, qweights, jac_dets = self.fe_space.get_quadrature_data(d=dim)    # nD x nP, nP
+        
+        # evaluate factor
+        Q = self.fe_space.mesh.eval_function(fnc=self.q, points=qpoints)       # nE x nP[x nD]
+        
+        # compute entries of the operator matrix
+        dbasis_global = self.fe_space.eval_global_derivatives(points=qpoints, deriv=1)  # nE x nB x nP x nD
+
+        # assuming Q is a vector
+        assert (Q.ndim - 2) == 1
+        Q = Q[:,None,None,:,:]                                      # nE x  1 x  1 x nP x nD
+        
+        values = (Q * dbasis_global[:,:,None,:,:]).sum(axis=-1)        # nE x nB x  1 x nP
+
+        jac_dets = jac_dets[:,None,None,:]                                # nE x  1 x  1 x nP
+        qweights = qweights[None,None,None,:]                            #  1 x  1 x  1 x nP
+
+
+        entries = (values * jac_dets * qweights).sum(axis=-1)         # nE x nB x  1
+
+        return entries[:,:,0]
+
 class L2Projection(object):
     """
     Provides an object for the :math:`L^{2}`\ -projection

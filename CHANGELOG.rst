@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Unreleased
+++++++++++
+
+Added
+-----
+
+- Neumann and periodic boundary conditions
+- Mesh generator using signed distance functions
+
 Release 0.1.0
 +++++++++++++
 
