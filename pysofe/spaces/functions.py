@@ -9,7 +9,7 @@ import numpy as np
 from IPython import embed as IPS
 
 class FEFunction(object):
-    '''
+    """
     A finite element function defined via degrees of freedoms.
 
     Parameters
@@ -20,7 +20,7 @@ class FEFunction(object):
 
     dof_values : array_like
         Values for the degrees of freedom of the function space
-    '''
+    """
 
     def __init__(self, fe_space, dof_values):
         if not isinstance(dof_values, np.ndarray):
@@ -36,16 +36,16 @@ class FEFunction(object):
 
     @property
     def order(self):
-        '''
+        """
         The polynomial order of the function.
-        '''
+        """
         return self.fe_space.element.order
         
-    def __call__(self, points, deriv=0):
+    def __call__(self, points, deriv=0, local=True):
         return self._evaluate(points, deriv)
     
-    def _evaluate(self, points, deriv=0):
-        '''
+    def _evaluate(self, points, deriv=0, local=True):
+        """
         Evaluates the function or its derivatives at given points.
 
         Parameters
@@ -56,33 +56,83 @@ class FEFunction(object):
 
         deriv : int
             The derivation order
-        '''
+        """
 
-        # determine for which entities to evaluate the function
-        dim = np.size(points, axis=0)
-
-        # check input
-        if dim < self.fe_space.mesh.dimension and deriv > 0:
-            raise NotImplementedError('Higher order derivatives for traces not supported!')
-
-        # get dof map and adjust values
-        dof_map = self.fe_space.get_dof_map(d=dim)
-
-        values = self.dofs.take(indices=dof_map-1, axis=0)
-
-        # evaluate basis functions (or derivatives)
-        if deriv == 0:
-            # values : nB x nE
-            basis = self.fe_space.element.eval_basis(points, deriv)          # nB x nP
-                
-            #U = np.dot(values.T, basis)                                    # nE x nP
-            U = (values[:,:,None] * basis[:,None,:]).sum(axis=0)           # nE x nP
-        elif deriv == 1:
-            # values : nB x nE
-            dbasis_global = self.fe_space.eval_global_derivatives(points)  # nE x nB x nP x nD
-                
-            U = (values.T[:,:,None,None] * dbasis_global).sum(axis=1)      # nE x nP x nD
-        else:
-            raise NotImplementedError('Invalid derivation order ({})'.format(d))
+        U = self.fe_space.eval_dofs(dofs=self.dofs, points=points,
+                                    deriv=deriv, local=True)
 
         return U
+
+class PeriodicFEFunction(FEFunction):
+    """
+    A periodic finite element function.
+
+    Parameters
+    ----------
+
+    fe_space : pysofe.spaces.space.FESpace
+        The function space
+
+    dof_values : array_like
+        Values for the degrees of freedom of the function space
+    
+    period : scalar, iterable
+        Uniform period or period for each axis direction
+    """
+
+    def __init__(self, fe_space, dof_values, period):
+        FEFunction.__init__(self, fe_space, dof_values)
+
+        period = np.asarray(period).flatten()
+
+        if period.size == 1 and fe_space.element.dimension > 1:
+            period = np.repeat(period, fe_space.element.dimension)
+        else:
+            assert period.size == fe_space.element.dimension
+
+        self._period = period
+
+    @property
+    def period(self):
+        return self._period
+        
+    def _evaluate(self, points, deriv=0, local=True):
+        # resolve periodicity if necessary
+        if not local:
+            points = np.mod(points, self.period[:,None])
+
+        return super(PeriodicFEFunction, self)._evaluate(points, deriv, local)
+        
+class MeshFunction(object):
+    """
+    Wrapper for the evaluation of a given function on a specific mesh.
+
+    Parameters
+    ----------
+
+    fnc : callable
+        The function
+    
+    mesh : pysofe.meshes.mesh.Mesh
+        The considered mesh
+    """
+
+    def __init__(self, fnc, mesh):
+        self.fnc = fnc
+        self.mesh = mesh
+
+    def __call__(self, points, local=True):
+        return self._evaluate(points, local)
+
+    def _evaluate(self, points, local=True):
+        """
+        Evaluates the function at given points.
+        """
+
+        if not local:
+            raise NotImplementedError()
+
+        F = self.mesh.eval_function(fnc=self.fnc, points=points)
+
+        return F
+    

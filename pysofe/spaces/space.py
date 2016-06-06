@@ -116,3 +116,57 @@ class FESpace(DOFManager):
 
         return derivatives
 
+    def eval_dofs(self, dofs, points, deriv=0, local=True):
+        """
+        Evaluates the linear combination of the basis functions 
+        or their derivatives in the given points 
+        w.r.t. the given values for the degrees of freedom.
+
+        Parameters
+        ----------
+
+        dofs : numpy.ndarray
+            The degrees of freedom values
+
+        points : array_like
+            The points in which to evaluate the function
+
+        deriv : int
+            The derivation order
+
+        local : bool
+            Whether the points are local on the reference domain
+        """
+
+        if not local:
+            raise NotImplementedError()
+        
+        # determine for which entities to evaluate the function
+        dim = np.size(points, axis=0)
+
+        # check input
+        if dim < self.mesh.dimension and deriv > 0:
+            raise NotImplementedError('Higher order derivatives for traces not supported!')
+
+        # get dof map and adjust values
+        dof_map = self.get_dof_map(d=dim)
+
+        values = dofs.take(indices=dof_map-1, axis=0)
+
+        # evaluate basis functions (or derivatives)
+        if deriv == 0:
+            # values : nB x nE
+            basis = self.element.eval_basis(points, deriv)          # nB x nP
+                
+            U = (values[:,:,None] * basis[:,None,:]).sum(axis=0)           # nE x nP
+        elif deriv == 1:
+            # values : nB x nE
+            dbasis_global = self.eval_global_derivatives(points)  # nE x nB x nP x nD
+                
+            U = (values.T[:,:,None,None] * dbasis_global).sum(axis=1)      # nE x nP x nD
+        else:
+            raise NotImplementedError('Invalid derivation order ({})'.format(d))
+
+        return U
+
+        
