@@ -189,7 +189,7 @@ class PeriodicBC(BoundaryCondition):
         if b is not None:
             b = M.T.dot(b)        # M' * b
 
-        if retain_dofs:
+        if A is not None and retain_dofs:
             A = A.tolil()
 
             slave_rows = np.logical_not(A.rows.astype(bool)).nonzero()[0]
@@ -198,7 +198,7 @@ class PeriodicBC(BoundaryCondition):
             A.rows[slave_rows] = slave_rows[:,None].tolist()
             A.data[slave_rows] = slave_data[:,None].tolist()
 
-            A = A.tocsr()
+            #A = A.tocsr()
 
         #IPS()
 
@@ -214,7 +214,7 @@ class PeriodicBC(BoundaryCondition):
         #     b[0] = 0.
         #     b = b.tocsr()
         
-        return A.tolil(), b.tolil()
+        return A, b
 
     def _get_master_slave_dofs(self):
         """
