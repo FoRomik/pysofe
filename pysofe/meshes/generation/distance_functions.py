@@ -219,7 +219,7 @@ class DRectangle(DOrthotope):
 
 class DRectangle0(SignedDistanceFunction):
     """
-    Signed distance function for a rectangle.
+    Signed distance function for a rectangle (exact).
 
     Parameters
     ----------

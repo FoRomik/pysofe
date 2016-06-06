@@ -196,9 +196,19 @@ class Mesh(object):
                 # TODO: maybe do some stuff here...
                 raise err
 
-            # we are assuming it is a scalar function
-            # TODO: add test or get rid of this restriction?
-            values = values.reshape((nE, nP))
+            # bring return values in right shape
+            if values.ndim == 1:
+                # assuming scalar scalar function
+                values = values.reshape((nE, nP))
+            elif values.ndim == 2:
+                # assuming vector valued function
+                nD = np.size(values, axis=1)
+                values = values.reshape((nE, nP, nD))
+            elif values.ndim == 3:
+                # assuming matrix valued function
+                nD1 = np.size(values, axis=1)
+                nD2 = np.size(values, axis=2)
+                values = values.reshape((nE, nP, nD1, nD2))
 
         else:
             values = np.zeros((nE, nP))
