@@ -45,7 +45,8 @@ def show(obj, *args, **kwargs):
     elif isinstance(obj, pysofe.spaces.space.FESpace):
         V = FESpaceVisualizer()
         V.show(obj, *args, **kwargs)
-    elif isinstance(obj, pysofe.spaces.functions.FEFunction):
+    elif isinstance(obj, (pysofe.spaces.functions.FEFunction,
+                          pysofe.spaces.functions.MeshFunction)):
         V = FunctionVisualizer()
         V.show(obj, **kwargs)
     else:
@@ -314,9 +315,14 @@ class FunctionVisualizer(Visualizer):
 
         self.fnc = fnc
 
-        if fnc.fe_space.mesh.dimension == 1:
+        if isinstance(fnc, pysofe.spaces.functions.FEFunction):
+            dim = fnc.fe_space.mesh.dimension
+        elif isinstance(fnc, pysofe.spaces.functions.MeshFunction):
+            dim = fnc.mesh.dimension
+            
+        if dim == 1:
             mode = '1dplot'
-        elif fnc.fe_space.mesh.dimension == 2:
+        elif dim == 2:
             mode = kwargs.get('mode', 'trisurface')
         else:
             raise NotImplementedError()
@@ -386,7 +392,11 @@ class FunctionVisualizer(Visualizer):
         if mode in ('1dplot',):
             local_points = np.linspace(0., 1., 10)[None,:]
 
-            points = self.fnc.fe_space.mesh.ref_map.eval(local_points)
+            if isinstance(self.fnc, pysofe.spaces.functions.FEFunction):
+                points = self.fnc.fe_space.mesh.ref_map.eval(local_points)
+            elif isinstance(self.fnc, pysofe.spaces.functions.MeshFunction):
+                points = self.fnc.mesh.ref_map.eval(local_points)
+            
             _, I = np.unique(points.flat, return_index=True)
             points = points.ravel().take(I)[None,:]
             
@@ -413,15 +423,20 @@ class FunctionVisualizer(Visualizer):
 
     def _get_triangulation_data(self, **kwargs):
         # generate local points for the function evaluation
-        n_sub_grid = kwargs.get('n_sub_grid', self.fnc.order + 1)
+        #n_sub_grid = kwargs.get('n_sub_grid', self.fnc.order + 1)
+        n_sub_grid = kwargs.get('n_sub_grid', 3)
             
         local_points = utils.lagrange_nodes(dimension=2, order=n_sub_grid)
         
         # project them to their global counterparts
         order = 'C'
 
-        points = self.fnc.fe_space.mesh.ref_map.eval(points=local_points,
-                                                     deriv=0)
+        if isinstance(self.fnc, pysofe.spaces.functions.FEFunction):
+            points = self.fnc.fe_space.mesh.ref_map.eval(points=local_points,
+                                                         deriv=0)
+        elif isinstance(self.fnc, pysofe.spaces.functions.MeshFunction):
+            points = self.fnc.mesh.ref_map.eval(points=local_points,
+                                                deriv=0)
             
         points = np.vstack([points[:,:,0].ravel(order=order), points[:,:,1].ravel(order=order)])
 
@@ -441,7 +456,8 @@ class FunctionVisualizer(Visualizer):
                 else:
                     values = self.fnc(points=points, deriv=d, local=False)
             elif isinstance(self.fnc, pysofe.spaces.functions.MeshFunction):
-                values = self.fnc(points=points, deriv=d)
+                # values = self.fnc(points=points, deriv=d)
+                values = self.fnc(points=points)
         else:
             fnc_args = kwargs.get('fnc_args', dict())
             
@@ -450,12 +466,13 @@ class FunctionVisualizer(Visualizer):
             else:
                 values = self.fnc(points=points, deriv=d, local=False, **fnc_args)
                 
-        if d == 0:
-            values = values.ravel(order=order).take(I, axis=0)
-        elif d == 1:
-            values = np.asarray([values.take(i, axis=-1).ravel(order=order).take(I, axis=0) for i in xrange(values.shape[-1])])
-        else:
-            raise ValueError('Invalid derivation order for visualization! ({})'.format(d))
+        if isinstance(self.fnc, pysofe.spaces.functions.FEFunction):
+            if d == 0:
+                values = values.ravel(order=order).take(I, axis=0)
+            elif d == 1:
+                values = np.asarray([values.take(i, axis=-1).ravel(order=order).take(I, axis=0) for i in xrange(values.shape[-1])])
+            else:
+                raise ValueError('Invalid derivation order for visualization! ({})'.format(d))
 
         # get cells corresponding to the unique points
         from scipy.spatial import Delaunay
@@ -496,7 +513,8 @@ class FunctionVisualizer(Visualizer):
             values = self.fnc(points=grid_points, deriv=d, local=False)
         elif isinstance(self.fnc, pysofe.spaces.functions.MeshFunction):
             fnc_args = kwargs.get('fnc_args', dict())
-            values = self.fnc(points=grid_points, deriv=d, **fnc_args)
+            # values = self.fnc(points=grid_points, deriv=d, **fnc_args)
+            values = self.fnc(points=grid_points, local=False)
 
         if d == 0:
             values = values.reshape(grid_shape)

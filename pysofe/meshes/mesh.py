@@ -159,7 +159,7 @@ class Mesh(object):
         """
         refinements.refine(mesh=self, method=method, inplace=True, **kwargs)
 
-    def eval_function(self, fnc, points):
+    def eval_function(self, fnc, points, local=True):
         """
         Evaluates a given function in the global mesh points corresponding
         to the given local points on the reference domain.
@@ -180,15 +180,20 @@ class Mesh(object):
             nE x nP [x ...]
         """
 
-        # first we need the global counterparts to the given local points
-        # --> nE x nP x nD
-        global_points = self.ref_map.eval(points, deriv=0)
-        nE, nP, nD = global_points.shape
+        if local:
+            # first we need the global counterparts to the given local points
+            # --> nE x nP x nD
+            global_points = self.ref_map.eval(points, deriv=0)
+            nE, nP, nD = global_points.shape
 
-        # stack and transpose them so they can be passed to the function
-        # --> nD x (nE * nP)
-        global_points = np.vstack(global_points).T
-        assert global_points.shape == (nD, nE * nP)
+            # stack and transpose them so they can be passed to the function
+            # --> nD x (nE * nP)
+            global_points = np.vstack(global_points).T
+            assert global_points.shape == (nD, nE * nP)
+        else:
+            global_points = points
+            nE = 1
+            nP = global_points.shape[1]
 
         # evaluate the function
         if callable(fnc):
@@ -200,22 +205,23 @@ class Mesh(object):
                 raise err
 
             # bring return values in right shape
-            if values.ndim == 1:
-                # assuming scalar scalar function
-                values = values.reshape((nE, nP))
-            elif values.ndim == 2:
-                # assuming vector valued function
-                nD = np.size(values, axis=1)
-                values = values.reshape((nE, nP, nD))
-            elif values.ndim == 3:
-                # assuming matrix valued function
-                nD1 = np.size(values, axis=1)
-                nD2 = np.size(values, axis=2)
-                values = values.reshape((nE, nP, nD1, nD2))
+            if local:
+                if values.ndim == 1:
+                    # assuming scalar scalar function
+                    values = values.reshape((nE, nP))
+                elif values.ndim == 2:
+                    # assuming vector valued function
+                    nD = np.size(values, axis=1)
+                    values = values.reshape((nE, nP, nD))
+                elif values.ndim == 3:
+                    # assuming matrix valued function
+                    nD1 = np.size(values, axis=1)
+                    nD2 = np.size(values, axis=2)
+                    values = values.reshape((nE, nP, nD1, nD2))
 
         else:
             values = np.zeros((nE, nP))
-            
+                
             if np.isscalar(fnc):
                 # if the given function is somehow constant
                 # return a broadcasted version that matches the
@@ -244,8 +250,11 @@ class Mesh(object):
             else:
                 raise TypeError("Invalid function type!")
 
-        return values            # nE x nP x nD
-        # return np.vstack(values) # (nE*nP) x nD
+        if local:
+            return values            # nE x nP x nD
+            # return np.vstack(values) # (nE*nP) x nD
+        else:
+            return values[0]
 
     def search(self, points, return_preimage=True):
         """

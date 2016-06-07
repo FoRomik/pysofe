@@ -121,18 +121,15 @@ class MeshFunction(object):
         self.fnc = fnc
         self.mesh = mesh
 
-    def __call__(self, points, local=True):
+    def __call__(self, points, local=False):
         return self._evaluate(points, local)
 
-    def _evaluate(self, points, local=True):
+    def _evaluate(self, points, local=False):
         """
         Evaluates the function at given points.
         """
 
-        if not local:
-            raise NotImplementedError()
-
-        F = self.mesh.eval_function(fnc=self.fnc, points=points)
+        F = self.mesh.eval_function(fnc=self.fnc, points=points, local=local)
 
         return F
     
