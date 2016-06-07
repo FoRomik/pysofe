@@ -138,9 +138,6 @@ class FESpace(DOFManager):
             Whether the points are local on the reference domain
         """
 
-        if not local:
-            raise NotImplementedError()
-        
         # determine for which entities to evaluate the function
         dim = np.size(points, axis=0)
 
@@ -148,22 +145,49 @@ class FESpace(DOFManager):
         if dim < self.mesh.dimension and deriv > 0:
             raise NotImplementedError('Higher order derivatives for traces not supported!')
 
-        # get dof map and adjust values
+        # map local to global degrees of freedom
+        # for each cell
+        # -> dof_map : nB x nE
         dof_map = self.get_dof_map(d=dim)
 
-        values = dofs.take(indices=dof_map-1, axis=0)
+        if not local:
+            # determine host cell and local counterpart
+            # for each given global point
+            hosts_idx, local_points = self.mesh.search(points=points, return_preimage=True)
+
+            # take corresponding degrees of freedom from dof map
+            # -> dof_map : nB x nP
+            dof_map = dof_map.take(hosts_idx-1, axis=1)
+
+        # get values for the degrees of freedom
+        # -> values : nB x (nE|nP)
+        values = dofs.take(dof_map-1, axis=0)
 
         # evaluate basis functions (or derivatives)
         if deriv == 0:
-            # values : nB x nE
-            basis = self.element.eval_basis(points, deriv)          # nB x nP
-                
-            U = (values[:,:,None] * basis[:,None,:]).sum(axis=0)           # nE x nP
+            if local:
+                # evaluate local basis functions for each local point
+                basis = self.element.eval_basis(points, deriv)
+
+                # values : nB x nE
+                # basis  : nB x nP
+                U = (values[:,:,None] * basis[:,None,:]).sum(axis=0)           # nE x nP
+            else:
+                # evaluate local basis functions for local counterparts
+                # of given global points
+                basis = self.element.eval_basis(local_points, deriv)
+
+                # values : nB x nP
+                # basis  : nB x nP
+                U = (values * basis).sum(axis=0)                               # nP
         elif deriv == 1:
-            # values : nB x nE
-            dbasis_global = self.eval_global_derivatives(points)  # nE x nB x nP x nD
+            if local:
+                # values : nB x nE
+                dbasis_global = self.eval_global_derivatives(points)  # nE x nB x nP x nD
                 
-            U = (values.T[:,:,None,None] * dbasis_global).sum(axis=1)      # nE x nP x nD
+                U = (values.T[:,:,None,None] * dbasis_global).sum(axis=1)      # nE x nP x nD
+            else:
+                raise NotImplementedError()
         else:
             raise NotImplementedError('Invalid derivation order ({})'.format(d))
 

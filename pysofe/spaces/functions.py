@@ -41,10 +41,10 @@ class FEFunction(object):
         """
         return self.fe_space.element.order
         
-    def __call__(self, points, deriv=0, local=True):
-        return self._evaluate(points, deriv)
+    def __call__(self, points, deriv=0, local=False):
+        return self._evaluate(points, deriv, local)
     
-    def _evaluate(self, points, deriv=0, local=True):
+    def _evaluate(self, points, deriv=0, local=False):
         """
         Evaluates the function or its derivatives at given points.
 
@@ -59,7 +59,7 @@ class FEFunction(object):
         """
 
         U = self.fe_space.eval_dofs(dofs=self.dofs, points=points,
-                                    deriv=deriv, local=True)
+                                    deriv=deriv, local=local)
 
         return U
 

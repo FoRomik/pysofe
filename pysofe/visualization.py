@@ -325,7 +325,7 @@ class FunctionVisualizer(Visualizer):
 
         # get visualization data
         #----------------------------------------------------
-        points, values, cells = self._get_visualizetion_data(mode, **kwargs)
+        points, values, cells = self._get_visualization_data(mode, **kwargs)
 
         # set up figure and axes
         #----------------------------------------------------
@@ -375,10 +375,14 @@ class FunctionVisualizer(Visualizer):
         elif mode in ('tripcolor', 'heatmap'):
             self._plot_tripcolor(axes=axes, X=points[0], Y=points[1], triangles=cells,
                                  Z=values, **kwargs)
+        elif mode == 'surface':
+            self._plot_surface(axes=axes, X=points[0], Y=points[1], Z=values, **kwargs)
+        elif mode == 'wireframe':
+            self._plot_wireframe(axes=axes, X=points[0], Y=points[1], Z=values, **kwargs)
 
         return fig, axes
 
-    def _get_visualizetion_data(self, mode, **kwargs):
+    def _get_visualization_data(self, mode, **kwargs):
         if mode in ('1dplot',):
             local_points = np.linspace(0., 1., 10)[None,:]
 
@@ -394,8 +398,15 @@ class FunctionVisualizer(Visualizer):
             return points, values, cells
         elif mode in ('trisurface', 'tripcolor', 'heatmap'):
             # get points, values and triangles for the plot
-
             return self._get_triangulation_data(**kwargs)
+        elif mode in ('surface', 'wireframe'):
+            points, values = self._get_meshgrid_data(**kwargs)
+
+            if values.ndim == 2:
+                values = values[None,:,:]
+            
+            cells = None
+            return points, values, cells
         else:
             msg = "Invalid visualization mode for functions! ({})"
             raise ValueError(msg.format(mode))
@@ -421,23 +432,23 @@ class FunctionVisualizer(Visualizer):
         # evaluate the function w.r.t the unique points
         d = kwargs.get('d', 0)
 
-        if 0:
+        if 1:
             if isinstance(self.fnc, pysofe.spaces.functions.FEFunction):
                 eval_local = kwargs.get('eval_local', True)
                 
                 if eval_local:
-                    values = self.fnc(points=local_points, d=d, local=True)
+                    values = self.fnc(points=local_points, deriv=d, local=True)
                 else:
-                    values = self.fnc(points=points, d=d, local=False)
+                    values = self.fnc(points=points, deriv=d, local=False)
             elif isinstance(self.fnc, pysofe.spaces.functions.MeshFunction):
-                values = self.fnc(points=points, d=d)
+                values = self.fnc(points=points, deriv=d)
         else:
             fnc_args = kwargs.get('fnc_args', dict())
             
             if kwargs.get('eval_local', True):
                 values = self.fnc(points=local_points, deriv=d, **fnc_args)
             else:
-                values = self.fnc(points=points, d=d, local=False, **fnc_args)
+                values = self.fnc(points=points, deriv=d, local=False, **fnc_args)
                 
         if d == 0:
             values = values.ravel(order=order).take(I, axis=0)
@@ -454,6 +465,48 @@ class FunctionVisualizer(Visualizer):
         
         return points, values, cells
 
+    def _get_meshgrid_data(self, **kwargs):
+        # assuming we have a rectangular mesh domain
+        # we first get the bounding box limits
+
+        if isinstance(self.fnc, pysofe.spaces.functions.FEFunction):
+            nodes = self.fnc.fe_space.mesh.nodes
+        elif isinstance(self.fnc, pysofe.spaces.functions.MeshFunction):
+            nodes = self.fnc.mesh.nodes
+            
+        xmin, ymin = nodes.min(axis=0)
+        xmax, ymax = nodes.max(axis=0)
+
+        dx = xmax - xmin
+        dy = ymax - ymin
+
+        coords_x = np.linspace(xmin, xmax, num=kwargs.get('num', 100) * dx)
+        coords_y = np.linspace(ymin, ymax, num=kwargs.get('num', 100) * dy)
+
+        grid_x, grid_y = np.meshgrid(coords_x, coords_y)
+
+        grid_shape = grid_x.shape
+        grid_points = np.vstack([grid_x.flat, grid_y.flat])
+
+        points = np.asarray([grid_x, grid_y])
+
+        d = kwargs.get('d', 0)
+
+        if isinstance(self.fnc, pysofe.spaces.functions.FEFunction):
+            values = self.fnc(points=grid_points, deriv=d, local=False)
+        elif isinstance(self.fnc, pysofe.spaces.functions.MeshFunction):
+            fnc_args = kwargs.get('fnc_args', dict())
+            values = self.fnc(points=grid_points, deriv=d, **fnc_args)
+
+        if d == 0:
+            values = values.reshape(grid_shape)
+        elif d == 1:
+            values = np.asarray([values.take(i, axis=-1).reshape(grid_shape) for i in xrange(values.shape[-1])])
+        else:
+            raise ValueError('Invalid derivation order for visualization! ({})'.format(d))
+
+        return points, values
+    
     def _plot_trisurf(self, axes, X, Y, triangles, Z, **kwargs):
         '''
         Wrapper for the :py:meth:`plot_trisurf` method of
@@ -525,6 +578,66 @@ class FunctionVisualizer(Visualizer):
                     if axis_off:
                         # don't show axis
                         axes[i,j].set_axis_off()
+
+    def _plot_surface(self, axes, X, Y, Z, **kwargs):
+        '''
+        Wrapper for the :py:meth:`plot_surface` method of
+        the :py:class:`mpl_toolkits.mplot3d.Axes3D` class.
+
+        Parameters
+        ----------
+
+        X, Y, Z : array_like
+            2D arrays with data values
+        '''
+
+        # set default values
+        rstride = kwargs.get('rstride', 10)
+        cstride = kwargs.get('cstride', 10)
+        cmap = kwargs.get('cmap', cm.jet)
+        
+        # get layout
+        n_values = Z.shape[0]
+        nrows, ncols = axes.shape
+
+        # iterate over axes and plot
+        for i in xrange(nrows):
+            for j in xrange(ncols):
+                if i * ncols + j < n_values:
+                    # call mpl_toolkit's plot_trisurf
+                    axes[i,j].plot_surface(X, Y, Z[i * ncols + j],
+                                           rstride=rstride, cstride=cstride,
+                                           cmap=cmap, shade=True,
+                                           linewidth=0., antialiased=False)
+
+    def _plot_wireframe(self, axes, X, Y, Z, **kwargs):
+        '''
+        Wrapper for the :py:meth:`plot_surface` method of
+        the :py:class:`mpl_toolkits.mplot3d.Axes3D` class.
+
+        Parameters
+        ----------
+
+        X, Y, Z : array_like
+            2D arrays with data values
+        '''
+
+        # set default values
+        rstride = kwargs.get('rstride', 10)
+        cstride = kwargs.get('cstride', 10)
+        
+        # get layout
+        n_values = Z.shape[0]
+        nrows, ncols = axes.shape
+        
+        # iterate over axes and plot
+        for i in xrange(nrows):
+            for j in xrange(ncols):
+                if i * ncols + j < n_values:
+                    # call mpl_toolkit's plot_trisurf
+                    axes[i,j].plot_wireframe(X, Y, Z[i * ncols + j],
+                                             rstride=rstride, cstride=cstride)
+
 
 class QuadRuleVisualizer(Visualizer):
     """
