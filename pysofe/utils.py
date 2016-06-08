@@ -205,3 +205,30 @@ def bool2int(mask):
     
     return mask.nonzero()[0]
 
+def mesh_area(mesh):
+    r"""
+    Computes the area of a 2D triangular mesh using Heron's formula.
+
+    Given the lengths :math:`a,b,c` of the edges of a triangle
+    its area is given by
+    
+    .. math::
+       \sqrt{s(s-a)(s-b)(s.c)}
+
+    where :math:`s = \frac{a + b + c}{2}`.
+    """
+
+    # first we need the length of all edges
+    edges = mesh.nodes.take(mesh.edges-1, axis=0)
+    edge_vecs = np.abs(np.diff(edges, axis=1)[:,0,:])
+    edge_lengths = np.sqrt(np.power(edge_vecs, 2).sum(axis=1))
+
+    # then we need the edge lengths w.r.t to each triangle
+    inc_2_1 = mesh.topology.get_connectivity(2, 1, return_indices=True)
+    abc = edge_lengths.take(inc_2_1 - 1)
+
+    # now we can apply Heron's formula
+    s = 0.5 * abc.sum(axis=1)
+    A = np.sqrt(s * (s[:,None] - abc).prod(axis=1)).sum()
+
+    return A
