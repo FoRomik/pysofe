@@ -65,6 +65,8 @@ class MeshGenerator(object):
         # step size in numerical differentiation
         self._dx = kwargs.get('dx', np.sqrt(np.finfo(float).eps))
 
+        self._maxit = kwargs.get('maxit', 1e3)
+        
         # we didn't do anything, yet
         self.old_nodes = None
         self.nodes = None
@@ -429,6 +431,8 @@ class MeshGenerator(object):
             delta_nodes = np.sqrt(np.power(nodes_diff, 2).sum(axis=1))
 
             if delta_nodes.max() < self.stol * h0:
+                break
+            elif nIt >= self._maxit:
                 break
             elif DEBUG:
                 if nIt % 1000 == 0:
