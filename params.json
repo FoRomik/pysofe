@@ -1,0 +1,6 @@
+{
+  "name": "PySOFE",
+  "tagline": "Simple and Sophisticated Object Oriented Flexible Finite Element Environment",
+  "body": "About\r\n=====\r\n\r\nPySOFE is a Python software package for solving partial differential\r\nequations in 1D, 2D, and 3D using the finite element method.\r\n\r\nInstallation\r\n============\r\n\r\nPySOFE is hosted at the Python Packaging Index so you can simply\r\ninstall it by running\r\n\r\n    $ pip install pysofe\r\n\r\nin a terminal. For further information please have a look at the\r\ndocumentation.\r\n\r\nDocumentation\r\n=============\r\n\r\nThe documentation can be found at\r\n[readthedocs](http://pysofe.rtfd.io).\r\n\r\nLicense\r\n=======\r\n\r\nPySOFE is published under the BSD license.\r\n\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
